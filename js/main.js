@@ -336,6 +336,8 @@
     L = window.LOCALES[code];
     fmt = makeFormatters(L.intl);
     document.documentElement.lang = code;
+    const canon = document.querySelector('link[rel="canonical"]');
+    if (canon) canon.href = code === "en" ? "https://grandrecap.vercel.app/" : `https://grandrecap.vercel.app/?lang=${code}`;
     document.title = t("meta.title");
     const md = document.querySelector('meta[name="description"]');
     if (md) md.setAttribute("content", t("meta.description"));
