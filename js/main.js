@@ -224,6 +224,7 @@
     root.querySelectorAll(".year").forEach((s) => yearIO.observe(s));
     yearNums = [...root.querySelectorAll(".year__num")];
     if (lenis) lenis.resize();
+    paintLine();
     onScroll();
   }
 
@@ -249,7 +250,7 @@
   function renderMemes() {
     document.getElementById("memes-grid").innerHTML = MEMES.map((m, i) => {
       const [what, note] = L.memes[m.id] || window.LOCALES.en.memes[m.id];
-      return `<article class="meme" style="--accent:${MEME_COLORS[i % MEME_COLORS.length]}">
+      return `<article class="meme${m.big ? " meme--big" : ""}" style="--accent:${MEME_COLORS[i % MEME_COLORS.length]}">
         <time datetime="${m.date}">${esc(fmtDate(m.date, { day: "numeric", month: "short", year: "numeric" }))}</time>
         <p class="meme__what">${esc(what)}</p>
         ${note ? `<p class="meme__note">${esc(note)}</p>` : ""}
@@ -262,7 +263,6 @@
     births: document.querySelector('[data-live="births"]'),
     km: document.querySelector('[data-live="km"]'),
     hours: document.querySelector('[data-live="hours"]'),
-    moons: document.querySelector('[data-live="moons"]'),
     age: document.querySelector('[data-live="age"]')
   };
   function updateLive() {
@@ -273,7 +273,6 @@
     set(live.births, Math.floor(years * WAIT.birthsPerYear));
     set(live.km, Math.floor(sec * WAIT.earthKmPerSec));
     set(live.hours, Math.floor(sec / 3600));
-    set(live.moons, Math.floor(sec / 86400 / WAIT.synodicMonthDays));
     set(live.age, Math.floor(years));
   }
 
@@ -307,7 +306,7 @@
     document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
     document.querySelector(".hero__title").innerHTML = L.title.map((line) => `<span>${esc(line)}</span>`).join("");
-    document.querySelector("[data-sales]").textContent = L.salesValue;
+    document.querySelectorAll("[data-value]").forEach((el) => { el.textContent = L[el.dataset.value] || window.LOCALES.en[el.dataset.value]; });
     document.getElementById("lang-select").value = code;
     const half = L.marquee.map((w) => `<span>${esc(w)}</span><span class="sep">★</span>`).join("");
     document.querySelector(".marquee__track").innerHTML = half + half;
@@ -327,6 +326,19 @@
     switchLang(e.target.value);
   });
 
+  /* ---------- Линия: градиент от цвета одной точки к цвету следующей ---------- */
+  function paintLine() {
+    const top = body.getBoundingClientRect().top;
+    const h = body.offsetHeight || 1;
+    const stops = [...root.querySelectorAll(".card")].map((card) => {
+      const dot = card.querySelector(".card__dot").getBoundingClientRect();
+      return { y: dot.top + dot.height / 2 - top, c: CATS[card.dataset.cat] || "#f472b6" };
+    }).sort((a, b) => a.y - b.y);
+    if (!stops.length) return;
+    const pct = (y) => `${Math.max(0, Math.min(100, (y / h) * 100)).toFixed(3)}%`;
+    fill.style.background = `linear-gradient(180deg, ${stops.map((st) => `${st.c} ${pct(st.y)}`).join(", ")})`;
+  }
+
   /* ---------- Скролл: градиент, линия, шапка, параллакс ---------- */
   const docEl = document.documentElement;
   const body = document.querySelector(".timeline__body");
@@ -338,7 +350,7 @@
     docEl.style.setProperty("--flow", `${(window.scrollY * 0.45).toFixed(1)}px`);
     const r = body.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / Math.max(1, r.height)));
-    fill.style.transform = `scaleY(${p})`;
+    fill.style.clipPath = `inset(0 0 ${((1 - p) * 100).toFixed(2)}% 0)`;
     yearnav.classList.toggle("is-visible", r.top < vh * 0.6 && r.bottom > vh * 0.4);
     topbar.classList.toggle("is-scrolled", window.scrollY > 40);
     if (reduceMotion) return;
@@ -354,7 +366,9 @@
     ticking = true;
     requestAnimationFrame(() => { onScroll(); ticking = false; });
   }, { passive: true });
-  window.addEventListener("resize", onScroll);
+  window.addEventListener("resize", () => { paintLine(); onScroll(); });
+  window.addEventListener("load", paintLine);
+  if ("ResizeObserver" in window) new ResizeObserver(() => paintLine()).observe(body);
 
   /* ---------- Старт ---------- */
   const first = initialLang();

@@ -249,7 +249,7 @@ html[lang="ja"] .hero__lead, html[lang="zh"] .hero__lead { letter-spacing: 0; li
 .timeline__line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--line); border-radius: 2px;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 220px, #000 calc(100% - 220px), transparent 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 220px, #000 calc(100% - 220px), transparent 100%); }
-.timeline__fill { position: absolute; inset: 0; background: linear-gradient(180deg, #f7c08f, #f472b6 55%, #b47cff); transform-origin: top; transform: scaleY(0); border-radius: 2px; }
+.timeline__fill { position: absolute; inset: 0; background: linear-gradient(180deg, #f7c08f, #f472b6 55%, #b47cff); clip-path: inset(0 0 100% 0); border-radius: 2px; }
 
 .year { position: relative; padding: 24px 0 48px; }
 .year__head { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 72px 0 48px; background: var(--bg); text-align: center; }
@@ -330,12 +330,13 @@ html[lang="ja"] .card__text, html[lang="zh"] .card__text { line-height: 1.75; }
 /* ============ Memes ============ */
 .memes { padding: clamp(80px, 10vw, 140px) 0 clamp(80px, 10vw, 140px); }
 .memes__grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;
+  columns: 4 240px; column-gap: 14px;
   max-width: 1240px; margin: clamp(36px, 5vw, 64px) auto 0; padding: 0 var(--gutter);
 }
 .meme {
   display: flex; flex-direction: column; gap: 10px;
-  min-height: 190px; padding: 24px 26px;
+  break-inside: avoid; margin: 0 0 14px;
+  padding: 22px 24px 24px;
   border-radius: var(--radius-sm);
   position: relative; isolation: isolate; overflow: hidden;
   transition: transform .5s var(--ease);
@@ -347,7 +348,10 @@ html[lang="ja"] .card__text, html[lang="zh"] .card__text { line-height: 1.75; }
 }
 .meme:hover { transform: translateY(-4px) rotate(-.4deg); }
 .meme time { font-weight: 600; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.meme__what { margin: auto 0 0; font: 700 clamp(21px, 1.8vw, 25px)/1.15 var(--font); letter-spacing: -0.03em; }
+.meme__what { margin: 18px 0 0; font: 700 clamp(19px, 1.5vw, 22px)/1.18 var(--font); letter-spacing: -0.03em; }
+.meme--big { padding: 26px 26px 30px; }
+.meme--big .meme__what { margin-top: 44px; font-size: clamp(26px, 2.3vw, 34px); line-height: 1.06; letter-spacing: -0.04em; }
+.meme--big .meme__note { font-size: 15px; }
 .meme__note { margin: 0; font-weight: 500; font-size: 14px; color: var(--accent); }
 html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; line-height: 1.35; }
 
@@ -373,7 +377,7 @@ html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; li
 @media (max-width: 900px) {
   .numbers__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tile--wide { grid-column: span 2; }
-  .tile--sales { grid-column: auto; }
+  .tile--kids { grid-column: auto; }
 }
 @media (max-width: 860px) {
   .topbar { gap: 10px; }
