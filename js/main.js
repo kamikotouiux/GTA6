@@ -423,6 +423,14 @@
   if (first === "en") { applyLang("en"); start(); }
   else switchLang(first).then(() => { if (!fmt) applyLang("en"); start(); });
 
+  // Главная картинка не загрузилась — убираем её (раньше было inline onerror, его блокирует CSP).
+  const heroImg = document.querySelector(".hero__img");
+  if (heroImg) {
+    const dropHero = () => heroImg.closest("picture")?.remove();
+    if (heroImg.complete && heroImg.naturalWidth === 0) dropHero();
+    else heroImg.addEventListener("error", dropHero, { once: true });
+  }
+
   let liveTimer = null, liveVisible = false;
   const syncLive = () => {
     const on = liveVisible && !document.hidden;
