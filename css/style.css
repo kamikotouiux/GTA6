@@ -68,6 +68,7 @@ p { text-wrap: pretty; }
   background-position: 0 calc(var(--flow, 0px) * -1);
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
+  padding-right: .08em; margin-right: -.08em;
 }
 
 .eyebrow { margin: 0 0 14px; font: 600 16px/1.2 var(--font); color: var(--peach-text); }
@@ -240,8 +241,10 @@ html[lang="ja"] .hero__lead, html[lang="zh"] .hero__lead { letter-spacing: 0; li
 .yearnav button.is-active::before { width: 12px; background: var(--pink); }
 
 .timeline__body { position: relative; max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
-.timeline__line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--line); border-radius: 2px; }
-.timeline__fill { position: absolute; inset: 0; background: linear-gradient(180deg, #f7c08f, #f472b6 55%, #b47cff); transform-origin: top; transform: scaleY(0); border-radius: 2px; box-shadow: 0 0 16px rgba(244, 114, 182, .55); }
+.timeline__line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--line); border-radius: 2px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 220px, #000 calc(100% - 220px), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 220px, #000 calc(100% - 220px), transparent 100%); }
+.timeline__fill { position: absolute; inset: 0; background: linear-gradient(180deg, #f7c08f, #f472b6 55%, #b47cff); transform-origin: top; transform: scaleY(0); border-radius: 2px; }
 
 .year { position: relative; padding: 24px 0 48px; }
 .year__head { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 72px 0 48px; background: var(--bg); text-align: center; }
@@ -250,7 +253,7 @@ html[lang="ja"] .hero__lead, html[lang="zh"] .hero__lead { letter-spacing: 0; li
 html[lang="ja"] .year__title, html[lang="zh"] .year__title { letter-spacing: 0; }
 
 /* Карточки */
-.year__cards { display: flex; flex-direction: column; gap: 28px; }
+.year__cards { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 28px; }
 .year__cards.is-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 104px; align-items: start; }
 .year__col { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
 .year__col--right { padding-top: 140px; }
@@ -258,12 +261,22 @@ html[lang="ja"] .year__title, html[lang="zh"] .year__title { letter-spacing: 0; 
 .card { position: relative; width: calc(50% - 52px); }
 .card--left { align-self: flex-start; }
 .card--right { align-self: flex-end; }
-.card__dot { position: absolute; top: 34px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--bg), 0 0 20px var(--accent); z-index: 2; }
+.card__dot { position: absolute; top: 34px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--bg); z-index: 2; }
 .card--left .card__dot { right: -59px; }
 .card--right .card__dot { left: -59px; }
 
-.card__inner { position: relative; overflow: hidden; transition: transform .6s var(--ease), box-shadow .6s var(--ease); }
-.card:hover .card__inner { transform: translateY(-4px); box-shadow: 0 30px 60px -30px color-mix(in srgb, var(--accent) 45%, transparent); }
+.card__inner { position: relative; isolation: isolate; overflow: hidden; transition: transform .6s var(--ease); }
+.card__inner::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  width: 70%; aspect-ratio: 1; right: -22%; top: -38%;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: .1; filter: blur(80px);
+  transition: opacity .6s var(--ease);
+}
+.card--major .card__inner::before { opacity: .15; }
+.card:hover .card__inner { transform: translateY(-4px); }
+.card:hover .card__inner::before { opacity: .18; }
 
 .card__media { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: #0d0b1b; }
 .card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1s var(--ease); }
@@ -276,11 +289,15 @@ html[lang="ja"] .year__title, html[lang="zh"] .year__title { letter-spacing: 0; 
   display: grid; place-items: center;
   aspect-ratio: 16 / 7;
   padding: 0 24px;
-  background:
-    radial-gradient(90% 120% at 15% 100%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%),
-    radial-gradient(70% 90% at 100% 0%, rgba(214, 164, 255, .18), transparent 60%),
-    #1b1733;
+  position: relative; isolation: isolate; overflow: hidden;
+  background: #1a1630;
 }
+.card__poster::before, .card__poster::after {
+  content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none;
+  filter: blur(60px);
+}
+.card__poster::before { width: 75%; aspect-ratio: 1; left: -15%; bottom: -70%; background: var(--accent); opacity: .38; }
+.card__poster::after { width: 55%; aspect-ratio: 1; right: -12%; top: -55%; background: #b98cff; opacity: .22; }
 .card__poster span { font: 800 clamp(44px, 17cqi, 150px)/1 var(--font); letter-spacing: -0.05em; white-space: nowrap; --flow-size: 360px; }
 
 .card__body { padding: clamp(24px, 2.6vw, 34px); }
@@ -315,10 +332,13 @@ html[lang="ja"] .card__text, html[lang="zh"] .card__text { line-height: 1.75; }
   display: flex; flex-direction: column; gap: 10px;
   min-height: 190px; padding: 24px 26px;
   border-radius: var(--radius-sm);
-  background:
-    radial-gradient(120% 100% at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
-    linear-gradient(180deg, var(--card-a), var(--card-b));
+  position: relative; isolation: isolate; overflow: hidden;
   transition: transform .5s var(--ease);
+}
+.meme::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  width: 80%; aspect-ratio: 1; right: -30%; top: -45%; border-radius: 50%;
+  background: var(--accent); opacity: .2; filter: blur(60px);
 }
 .meme:hover { transform: translateY(-4px) rotate(-.4deg); }
 .meme time { font-weight: 600; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
