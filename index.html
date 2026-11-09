@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Долгая дорога до VI</title>
-  <meta name="description" content="Неофициальный фанатский рекап 13 лет ожидания GTA VI: трейлеры, утечки, переносы, мемы и обратный отсчёт до 19 ноября 2026.">
-  <meta name="theme-color" content="#110d1a">
+  <title>The Long Road to GTA VI</title>
+  <meta name="description" content="An unofficial fan recap of 13 years of waiting for GTA VI: trailers, leaks, delays, memes and a countdown to November 19, 2026.">
+  <meta name="theme-color" content="#141126">
 
   <!-- Превью для X / Threads. После деплоя заменить SITE_URL на реальный домен. -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Долгая дорога до VI">
-  <meta property="og:description" content="13 лет ожидания GTA VI на одной странице: трейлеры, утечки, переносы и мемы.">
+  <meta property="og:title" content="The Long Road to GTA VI">
+  <meta property="og:description" content="13 years of waiting for GTA VI on one page: trailers, leaks, delays and memes.">
   <meta property="og:image" content="SITE_URL/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Долгая дорога до VI">
-  <meta name="twitter:description" content="13 лет ожидания GTA VI на одной странице: трейлеры, утечки, переносы и мемы.">
+  <meta name="twitter:title" content="The Long Road to GTA VI">
+  <meta name="twitter:description" content="13 years of waiting for GTA VI on one page: trailers, leaks, delays and memes.">
   <meta name="twitter:image" content="SITE_URL/og.png">
 
-  <link rel="preload" href="fonts/onest-cyrillic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/onest-cyrillic-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/onest-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/onest-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -28,18 +28,25 @@
   <div class="grain" aria-hidden="true"></div>
 
   <header class="topbar">
-    <a class="topbar__brand" href="#top" data-i18n="brand">Долгая дорога</a>
+    <a class="topbar__brand" href="#top" data-i18n="brand">The Long Road</a>
     <nav class="topbar__nav">
-      <a href="#timeline" data-i18n="nav.timeline">Хроника</a>
-      <a href="#finale" data-i18n="nav.finale">Финал</a>
+      <a href="#timeline" data-i18n="nav.timeline">Timeline</a>
+      <a href="#memes" data-i18n="nav.memes">Before GTA VI</a>
+      <a href="#finale" data-i18n="nav.finale">Finale</a>
     </nav>
-    <div class="lang" role="group" data-i18n-aria="lang.switch" aria-label="Язык">
-      <button type="button" data-lang="ru" aria-pressed="true">RU</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="topbar__timer">
-      <span class="dot" aria-hidden="true"></span><span data-countdown-inline>—</span>
-    </div>
+    <label class="lang">
+      <span class="visually-hidden" data-i18n="lang.label">Language</span>
+      <select id="lang-select">
+        <option value="en">English</option>
+        <option value="ru">Русский</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="tr">Türkçe</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
+      </select>
+    </label>
+    <div class="topbar__timer" data-countdown-inline>—</div>
   </header>
 
   <main id="top">
@@ -51,20 +58,20 @@
       </div>
 
       <div class="hero__content">
-        <p class="eyebrow" data-i18n="hero.eyebrow">Хроника ожидания, 2013–2026</p>
-        <h1 class="hero__title" data-i18n="hero.title">Долгая дорога до VI.</h1>
-        <p class="hero__lead chill" data-i18n="hero.lead">Тринадцать лет мемов, утечек, переносов и двух трейлеров. Мы собрали весь путь на одной странице, чтобы его можно было пролистать за пять минут.</p>
+        <p class="eyebrow" data-i18n="hero.eyebrow">A chronicle of the wait, 2013–2026</p>
+        <h1 class="hero__title flow"><span>The long road</span><span>to GTA VI.</span></h1>
+        <p class="hero__lead flow" data-i18n="hero.lead">Thirteen years of memes, leaks, delays and four trailers.</p>
 
         <div class="hero__bottom">
           <div class="countdown" data-countdown>
-            <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">дней</span></div>
-            <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">часов</span></div>
-            <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">минут</span></div>
-            <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">секунд</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">days</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">hours</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">minutes</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">seconds</span></div>
           </div>
           <div class="hero__actions">
-            <p class="countdown__caption" data-i18n="hero.caption">до 19 ноября 2026</p>
-            <a class="btn" href="#timeline" data-i18n="hero.cta">Смотреть хронику</a>
+            <p class="countdown__caption" data-i18n="hero.caption">until November 19, 2026</p>
+            <a class="btn btn--peach" href="#timeline"><span data-i18n="hero.cta">Explore the timeline</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4.5L15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           </div>
         </div>
       </div>
@@ -73,36 +80,52 @@
     <!-- MARQUEE -->
     <div class="marquee" aria-hidden="true"><div class="marquee__track"></div></div>
 
-    <!-- STATS -->
-    <section class="stats">
-      <div class="stat reveal">
-        <span class="stat__num chill" data-days-since="2013-09-17">0</span>
-        <span class="stat__label" data-i18n="stats.days">дней с выхода GTA V</span>
+    <!-- NUMBERS -->
+    <section class="numbers" id="numbers">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="stats.eyebrow">While we waited</p>
+        <h2 class="section-title" data-i18n="stats.title">13 years in numbers</h2>
       </div>
-      <div class="stat reveal">
-        <span class="stat__num">2</span>
-        <span class="stat__label" data-i18n="stats.trailers">трейлера, разобранных покадрово</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num">2</span>
-        <span class="stat__label" data-i18n="stats.delays">переноса и одно «простите»</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num">90+</span>
-        <span class="stat__label" data-i18n="stats.leak">утёкших видео из ранней сборки</span>
+      <div class="numbers__grid">
+        <div class="tile tile--wide">
+          <span class="tile__num tile__num--long flow" data-live="births">0</span>
+          <span class="tile__label" data-i18n="stats.births">people were born on Earth</span>
+          <span class="tile__note" data-i18n="stats.birthsNote"></span>
+        </div>
+        <div class="tile">
+          <span class="tile__num flow" data-live="hours">0</span>
+          <span class="tile__label" data-i18n="stats.hours">hours of waiting</span>
+        </div>
+        <div class="tile">
+          <span class="tile__num flow" data-live="moons">0</span>
+          <span class="tile__label" data-i18n="stats.moons">full moons</span>
+        </div>
+        <div class="tile tile--wide">
+          <span class="tile__num tile__num--long flow" data-live="km">0</span>
+          <span class="tile__label" data-i18n="stats.km">km travelled by Earth around the Sun</span>
+        </div>
+        <div class="tile">
+          <span class="tile__num flow" data-live="age">13</span>
+          <span class="tile__label" data-i18n="stats.kids">years old</span>
+        </div>
+        <div class="tile tile--wide tile--sales">
+          <span class="tile__num flow" data-sales>230M+</span>
+          <span class="tile__label" data-i18n="stats.sales">copies of GTA V sold</span>
+          <span class="tile__note" data-i18n="stats.salesNote"></span>
+        </div>
       </div>
     </section>
 
     <!-- TIMELINE -->
     <section class="timeline" id="timeline">
-      <div class="timeline__head">
-        <p class="eyebrow" data-i18n="timeline.eyebrow">Год за годом</p>
-        <h2 class="section-title" data-i18n="timeline.title">Хроника ожидания</h2>
-        <div class="filters" role="toolbar" data-i18n-aria="filters.label" aria-label="Фильтр по типу события"></div>
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="timeline.eyebrow">Year by year</p>
+        <h2 class="section-title" data-i18n="timeline.title">The wait, in full</h2>
+        <div class="filters" role="toolbar" data-i18n-aria="filters.label" aria-label="Filter by event type"></div>
       </div>
 
       <div class="timeline__wrap">
-        <nav class="yearnav" data-i18n-aria="years.label" aria-label="Годы"></nav>
+        <nav class="yearnav" data-i18n-aria="years.label" aria-label="Years"></nav>
         <div class="timeline__body">
           <div class="timeline__line" aria-hidden="true"><div class="timeline__fill"></div></div>
           <div id="events"></div>
@@ -110,36 +133,46 @@
       </div>
     </section>
 
+    <!-- MEMES -->
+    <section class="memes" id="memes">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="memes.eyebrow">The meme that became a unit of time</p>
+        <h2 class="section-title" data-i18n="memes.title">We got this before GTA VI</h2>
+        <p class="section-lead" data-i18n="memes.lead"></p>
+      </div>
+      <div class="memes__grid" id="memes-grid"></div>
+    </section>
+
     <!-- FINALE -->
     <section class="finale" id="finale">
       <div class="finale__sky" aria-hidden="true"></div>
-      <p class="eyebrow" data-i18n="finale.eyebrow">Конец пути</p>
-      <h2 class="finale__date chill">19.11.26</h2>
-      <p class="finale__lead" data-i18n="finale.lead">Леонида ждёт. Осталось совсем немного.</p>
+      <p class="eyebrow" data-i18n="finale.eyebrow">The end of the road</p>
+      <h2 class="finale__date flow">19.11.26</h2>
+      <p class="finale__lead" data-i18n="finale.lead">Leonida is waiting. Almost there.</p>
       <div class="countdown countdown--small" data-countdown>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">дней</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">часов</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">минут</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">секунд</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">days</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">hours</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">minutes</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">seconds</span></div>
       </div>
 
       <div class="share">
-        <span class="share__title" data-i18n="share.title">Поделиться</span>
+        <span class="share__title" data-i18n="share.title">Share</span>
         <a class="btn btn--ghost" data-share="x" href="https://x.com/intent/tweet" target="_blank" rel="noopener">X</a>
         <a class="btn btn--ghost" data-share="threads" href="https://www.threads.net/intent/post" target="_blank" rel="noopener">Threads</a>
-        <button class="btn btn--ghost" type="button" data-share="copy" data-i18n="share.copy">Скопировать ссылку</button>
+        <button class="btn btn--ghost" type="button" data-share="copy" data-i18n="share.copy">Copy link</button>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p data-i18n="footer.disclaimer">Неофициальный фанатский проект. Не связан с Rockstar Games и Take-Two Interactive. Все торговые марки принадлежат их владельцам.</p>
-    <a href="#top" data-i18n="footer.top">Наверх ↑</a>
+    <p data-i18n="footer.disclaimer">Unofficial fan project. Not affiliated with Rockstar Games or Take-Two Interactive.</p>
+    <a href="#top" data-i18n="footer.top">Back to top ↑</a>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/events.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/locales/en.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

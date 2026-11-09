@@ -3,33 +3,70 @@
 
   // Релиз: 19 ноября 2026, полночь по локальному времени зрителя.
   const RELEASE = new Date(2026, 10, 19, 0, 0, 0);
+  const SUPPORTED = ["en", "ru", "es", "fr", "tr", "ja", "zh"];
+  const CJK_FONTS = {
+    ja: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;800&display=swap",
+    zh: "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700;800&display=swap"
+  };
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const I18N = window.I18N, CATS = window.CATEGORIES, ERAS = window.ERAS;
-  const events = [...window.EVENTS].sort((a, b) => a.sort.localeCompare(b.sort));
+  const CATS = window.CATEGORIES;
+  const EVENTS = [...window.EVENTS].sort((a, b) => (a.sort || a.date).localeCompare(b.sort || b.date));
+  const MEMES = [...window.MEMES].sort((a, b) => a.date.localeCompare(b.date));
+  const WAIT = window.WAIT;
+  const START = new Date(WAIT.start);
 
   /* ---------- Язык ---------- */
   const store = {
     get() { try { return localStorage.getItem("lang"); } catch (e) { return null; } },
     set(v) { try { localStorage.setItem("lang", v); } catch (e) { /* приватный режим */ } }
   };
-  function detectLang() {
+  function initialLang() {
     const q = new URLSearchParams(location.search).get("lang");
-    if (q === "ru" || q === "en") return q;
+    if (SUPPORTED.includes(q)) return q;
     const saved = store.get();
-    if (saved === "ru" || saved === "en") return saved;
-    const nav = (navigator.languages || [navigator.language || "ru"]).join(",").toLowerCase();
-    return /(^|,)(ru|uk|be|kk)/.test(nav) ? "ru" : "en";
+    if (SUPPORTED.includes(saved)) return saved;
+    return "en";
   }
-  let lang = detectLang();
+  function ensureLocale(code) {
+    window.LOCALES = window.LOCALES || {};
+    if (window.LOCALES[code]) return Promise.resolve(code);
+    return new Promise((resolve) => {
+      const s = document.createElement("script");
+      s.src = `js/locales/${code}.js`;
+      s.onload = () => resolve(window.LOCALES[code] ? code : "en");
+      s.onerror = () => resolve("en");
+      document.head.appendChild(s);
+    });
+  }
+  function ensureFont(code) {
+    const href = CJK_FONTS[code];
+    if (!href || document.querySelector(`link[data-font="${code}"]`)) return;
+    const l = document.createElement("link");
+    l.rel = "stylesheet"; l.href = href; l.dataset.font = code;
+    document.head.appendChild(l);
+  }
+
+  let lang = "en";
+  let L = window.LOCALES.en;
   let filter = "all";
-  const t = (k) => (I18N[lang] && I18N[lang][k] !== undefined ? I18N[lang][k] : I18N.ru[k]);
-  const L = (obj) => (obj && typeof obj === "object" ? obj[lang] || obj.ru : obj);
-  const plural = new Map();
-  const unitLabel = (unit, n) => {
-    if (!plural.has(lang)) plural.set(lang, new Intl.PluralRules(lang));
-    const forms = t("units")[unit];
-    return forms[plural.get(lang).select(n)] || forms.other;
+  const t = (k) => (L.ui[k] !== undefined ? L.ui[k] : window.LOCALES.en.ui[k]);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const cap = (s) => s.charAt(0).toLocaleUpperCase(L.intl) + s.slice(1);
+  const plural = (unit, n) => {
+    const forms = L.units[unit];
+    const key = new Intl.PluralRules(L.intl).select(n);
+    return forms[key] || forms.other;
   };
+  let numFmt = new Intl.NumberFormat("en-US");
+
+  function fmtDate(iso, opts) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const date = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+    const o = opts || (d ? { day: "numeric", month: "long", year: "numeric" } : m ? { month: "long", year: "numeric" } : { year: "numeric" });
+    const s = new Intl.DateTimeFormat(L.intl, Object.assign({ timeZone: "UTC" }, o)).format(date);
+    return cap(s.replace(/\s?г\.$/, ""));
+  }
+  const eventDate = (ev) => (L.dates && L.dates[ev.id]) || fmtDate(ev.date);
 
   /* ---------- Плавный скролл ---------- */
   let lenis = null;
@@ -40,7 +77,7 @@
   }
   const scrollToEl = (el) => {
     if (!el) return;
-    if (lenis) lenis.scrollTo(el, { offset: -90 });
+    if (lenis) lenis.scrollTo(el, { offset: -80 });
     else el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   };
   document.addEventListener("click", (e) => {
@@ -60,25 +97,26 @@
   function tick() {
     const diff = RELEASE - Date.now();
     if (diff <= 0) {
-      timers.forEach((el) => (el.innerHTML = `<p class="countdown__done">${t("countdown.done")}</p>`));
+      timers.forEach((el) => (el.innerHTML = `<p class="countdown__done">${esc(t("countdown.done"))}</p>`));
       if (inline) inline.textContent = t("countdown.inlineDone");
       return false;
     }
     const s = Math.floor(diff / 1000);
-    const parts = { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
+    const p = { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
     timers.forEach((el) => {
-      for (const k in parts) {
+      for (const k in p) {
         const num = el.querySelector(`[data-unit="${k}"]`);
         const lab = el.querySelector(`[data-label="${k}"]`);
-        const v = pad(parts[k]);
+        const v = pad(p[k]);
         if (num && num.textContent !== v) {
           num.textContent = v;
           if (k === "s" && !reduceMotion) { num.classList.remove("tick"); void num.offsetWidth; num.classList.add("tick"); }
         }
-        if (lab) { const l = unitLabel(k, parts[k]); if (lab.textContent !== l) lab.textContent = l; }
+        if (lab) { const l = plural(k, p[k]); if (lab.textContent !== l) lab.textContent = l; }
       }
     });
-    if (inline) inline.textContent = `${parts.d}${t("countdown.d")} ${pad(parts.h)}:${pad(parts.m)}:${pad(parts.s)}`;
+    const sh = L.short;
+    if (inline) inline.textContent = `${p.d}${sh.d} ${p.h}${sh.h} ${p.m}${sh.m} ${p.s}${sh.s}`;
     return true;
   }
 
@@ -86,66 +124,94 @@
   const root = document.getElementById("events");
   const yearnav = document.querySelector(".yearnav");
   const filtersEl = document.querySelector(".filters");
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   let yearIO = null;
   let yearNums = [];
+  const wide = window.matchMedia("(min-width: 861px)");
+  if (wide.addEventListener) wide.addEventListener("change", () => renderTimeline());
+
+  const PLAY = '<span class="card__play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5 3.5v13l11-6.5z"/></svg></span>';
+
+  function mediaHTML(ev) {
+    if (ev.yt) {
+      return `<a class="card__media" href="https://www.youtube.com/watch?v=${ev.yt}" target="_blank" rel="noopener" aria-label="${esc(t("card.watch"))}">
+        <img src="https://i.ytimg.com/vi/${ev.yt}/maxresdefault.jpg" alt="" loading="lazy" data-yt="${ev.yt}">${PLAY}</a>`;
+    }
+    if (ev.img) return `<div class="card__media"><img src="${esc(ev.img)}" alt="" loading="lazy"></div>`;
+    if (ev.poster) return `<div class="card__poster" aria-hidden="true"><span class="flow">${esc(ev.poster)}</span></div>`;
+    return "";
+  }
+
+  function cardHTML(ev, side) {
+    const [title, text] = L.events[ev.id] || window.LOCALES.en.events[ev.id] || [ev.id, ""];
+    const media = mediaHTML(ev);
+    const links = [];
+    if (ev.link) links.push(`<a href="${esc(ev.link)}">${esc(t("card.more"))} ↓</a>`);
+    if (ev.yt) links.push(`<a href="https://www.youtube.com/watch?v=${ev.yt}" target="_blank" rel="noopener">${esc(t("card.watch"))} ↗</a>`);
+    if (ev.source) links.push(`<a href="${esc(ev.source)}" target="_blank" rel="noopener">${esc(t("card.source"))} ↗</a>`);
+    const cls = ["card", side ? "card--right" : "card--left"];
+    if (ev.major) cls.push("card--major");
+    if (media) cls.push("card--media");
+    return `<article class="${cls.join(" ")}" data-cat="${ev.cat}" style="--accent:${CATS[ev.cat] || "#fff"}">
+      <span class="card__dot" aria-hidden="true"></span>
+      <div class="card__inner">
+        ${media}
+        <div class="card__body">
+          <div class="card__meta">
+            <time datetime="${esc(ev.date)}">${esc(eventDate(ev))}</time>
+            <span class="tag">${esc(L.cats[ev.cat] || ev.cat)}</span>
+          </div>
+          <h4 class="card__title">${esc(title)}</h4>
+          <p class="card__text">${esc(text)}</p>
+          ${links.length ? `<div class="card__links">${links.join("")}</div>` : ""}
+        </div>
+      </div>
+    </article>`;
+  }
+
+  // Если превью с YouTube недоступно: maxres → hq → убрать картинку.
+  root.addEventListener("error", (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    if (img.dataset.yt && img.src.includes("maxresdefault")) { img.src = `https://i.ytimg.com/vi/${img.dataset.yt}/hqdefault.jpg`; return; }
+    const card = img.closest(".card");
+    const media = img.closest(".card__media");
+    if (media) media.remove();
+    if (card && !card.querySelector(".card__poster")) card.classList.remove("card--media");
+  }, true);
 
   function renderTimeline() {
     const groups = new Map();
-    events.forEach((ev) => {
+    EVENTS.forEach((ev) => {
       if (filter !== "all" && ev.cat !== filter) return;
-      const y = ev.sort.slice(0, 4);
+      const y = ev.date.slice(0, 4);
       if (!groups.has(y)) groups.set(y, []);
       groups.get(y).push(ev);
     });
-
-    root.innerHTML = "";
-    yearnav.innerHTML = "";
-    let side = 0;
+    const split = wide.matches;
+    let html = "", nav = "";
     groups.forEach((list, year) => {
-      const sec = document.createElement("section");
-      sec.className = "year";
-      sec.id = `y${year}`;
-      sec.dataset.year = year;
-      sec.innerHTML = `
-        <header class="year__head is-in">
-          <span class="year__num" aria-hidden="true">${year}</span>
-          <h3 class="year__title"><span class="visually-hidden">${year}. </span>${esc(L(ERAS[year]) || "")}</h3>
+      // На широком экране — две колонки со сдвигом (зигзаг без пустот), на узком — одна.
+      const cards = split && list.length > 1
+        ? `<div class="year__cards is-split">
+            <div class="year__col year__col--left">${list.filter((_, i) => i % 2 === 0).map((ev) => cardHTML(ev, 0)).join("")}</div>
+            <div class="year__col year__col--right">${list.filter((_, i) => i % 2 === 1).map((ev) => cardHTML(ev, 1)).join("")}</div>
+          </div>`
+        : `<div class="year__cards">${list.map((ev, i) => cardHTML(ev, i % 2)).join("")}</div>`;
+      html += `<section class="year" id="y${year}" data-year="${year}">
+        <header class="year__head">
+          <span class="year__num flow" aria-hidden="true">${year}</span>
+          <h3 class="year__title"><span class="visually-hidden">${year}. </span>${esc((L.eras && L.eras[year]) || "")}</h3>
         </header>
-        <div class="year__cards"></div>`;
-      const cards = sec.querySelector(".year__cards");
-      list.forEach((ev) => {
-        const cat = CATS[ev.cat] || { ru: ev.cat, en: ev.cat, color: "#fff" };
-        const card = document.createElement("article");
-        card.className = `card ${side++ % 2 ? "card--right" : "card--left"}${ev.major ? " card--major" : ""}${ev.draft ? " card--draft" : ""}`;
-        card.dataset.cat = ev.cat;
-        card.style.setProperty("--accent", cat.color);
-        card.innerHTML = `
-          <span class="card__dot" aria-hidden="true"></span>
-          <div class="card__inner">
-            <div class="card__meta">
-              <time datetime="${esc(ev.sort)}">${esc(L(ev.date))}</time>
-              <span class="tag">${esc(L(cat))}</span>
-              ${ev.draft ? `<span class="tag tag--draft">${esc(t("card.draft"))}</span>` : ""}
-            </div>
-            <h4 class="card__title">${esc(L(ev.title))}</h4>
-            <p class="card__text">${esc(L(ev.text))}</p>
-            ${ev.source ? `<a class="card__link" href="${esc(ev.source)}" target="_blank" rel="noopener">${esc(t("card.source"))} ↗</a>` : ""}
-          </div>`;
-        cards.appendChild(card);
-      });
-      root.appendChild(sec);
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = year;
-      btn.dataset.year = year;
-      btn.addEventListener("click", () => scrollToEl(sec));
-      yearnav.appendChild(btn);
+        ${cards}
+      </section>`;
+      nav += `<button type="button" data-year="${year}">${year}</button>`;
     });
+    root.innerHTML = html;
+    yearnav.innerHTML = nav;
 
     if (yearIO) yearIO.disconnect();
     const navBtns = [...yearnav.querySelectorAll("button")];
+    navBtns.forEach((b) => b.addEventListener("click", () => scrollToEl(document.getElementById(`y${b.dataset.year}`))));
     yearIO = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
         if (en.isIntersecting) navBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.year === en.target.dataset.year));
@@ -158,9 +224,9 @@
   }
 
   function renderFilters() {
-    const used = new Set(events.map((e) => e.cat));
+    const used = new Set(EVENTS.map((e) => e.cat));
     const chips = [["all", t("filters.all"), "var(--text)"]].concat(
-      Object.keys(CATS).filter((k) => used.has(k)).map((k) => [k, L(CATS[k]), CATS[k].color])
+      Object.keys(CATS).filter((k) => used.has(k)).map((k) => [k, L.cats[k], CATS[k]])
     );
     filtersEl.innerHTML = chips.map(([k, label, color]) =>
       `<button type="button" class="chip" data-filter="${k}" style="--accent:${color}" aria-pressed="${k === filter}"><i></i>${esc(label)}</button>`
@@ -174,22 +240,50 @@
     renderTimeline();
   });
 
-  /* ---------- Бегущая строка и шеринг ---------- */
-  function renderMarquee() {
-    const half = t("marquee").map((w) => `<span>${esc(w)}</span><span class="sep">★</span>`).join("");
-    document.querySelector(".marquee__track").innerHTML = half + half;
+  /* ---------- Мемы ---------- */
+  const MEME_COLORS = ["#ff8cc6", "#f7c08f", "#b9a6ff", "#8fd3ff", "#7fe7e0", "#ffe08a"];
+  function renderMemes() {
+    document.getElementById("memes-grid").innerHTML = MEMES.map((m, i) => {
+      const [what, note] = L.memes[m.id] || window.LOCALES.en.memes[m.id];
+      return `<article class="meme" style="--accent:${MEME_COLORS[i % MEME_COLORS.length]}">
+        <time datetime="${m.date}">${esc(fmtDate(m.date, { day: "numeric", month: "short", year: "numeric" }))}</time>
+        <p class="meme__what">${esc(what)}</p>
+        ${note ? `<p class="meme__note">${esc(note)}</p>` : ""}
+      </article>`;
+    }).join("");
   }
+
+  /* ---------- Живые цифры ---------- */
+  const live = {
+    births: document.querySelector('[data-live="births"]'),
+    km: document.querySelector('[data-live="km"]'),
+    hours: document.querySelector('[data-live="hours"]'),
+    moons: document.querySelector('[data-live="moons"]'),
+    age: document.querySelector('[data-live="age"]')
+  };
+  function updateLive() {
+    const now = Math.min(Date.now(), RELEASE.getTime());
+    const sec = (now - START.getTime()) / 1000;
+    const years = sec / (365.2425 * 86400);
+    const set = (el, v) => { const s = numFmt.format(v); if (el && el.textContent !== s) el.textContent = s; };
+    set(live.births, Math.floor(years * WAIT.birthsPerYear));
+    set(live.km, Math.floor(sec * WAIT.earthKmPerSec));
+    set(live.hours, Math.floor(sec / 3600));
+    set(live.moons, Math.floor(sec / 86400 / WAIT.synodicMonthDays));
+    set(live.age, Math.floor(years));
+  }
+
+  /* ---------- Шеринг ---------- */
   const shareUrl = () => location.href.split("#")[0];
   function renderShare() {
-    const text = t("share.text");
-    const url = shareUrl();
+    const text = t("share.text"), url = shareUrl();
     const x = document.querySelector('[data-share="x"]');
     const th = document.querySelector('[data-share="threads"]');
     if (x) x.href = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     if (th) th.href = `https://www.threads.net/intent/post?text=${encodeURIComponent(text + " " + url)}`;
   }
   const copyBtn = document.querySelector('[data-share="copy"]');
-  if (copyBtn) copyBtn.addEventListener("click", () => {
+  copyBtn.addEventListener("click", () => {
     if (!navigator.clipboard || !navigator.clipboard.writeText) return;
     navigator.clipboard.writeText(shareUrl()).then(() => {
       copyBtn.textContent = t("share.copied");
@@ -197,43 +291,47 @@
     }, () => {});
   });
 
-  /* ---------- Счётчик дней ---------- */
-  const daysEl = document.querySelector("[data-days-since]");
-  const daysTarget = Math.floor((Math.min(Date.now(), RELEASE.getTime()) - new Date(daysEl.dataset.daysSince + "T00:00:00")) / 86400000);
-  const fmt = (n) => n.toLocaleString(lang === "ru" ? "ru-RU" : "en-US");
-  let daysAnimating = false;
-
   /* ---------- Применить язык ---------- */
-  function applyLang(next) {
-    lang = next;
-    document.documentElement.lang = lang;
+  function applyLang(code) {
+    lang = code;
+    L = window.LOCALES[code];
+    numFmt = new Intl.NumberFormat(L.intl);
+    document.documentElement.lang = code;
     document.title = t("meta.title");
     const md = document.querySelector('meta[name="description"]');
     if (md) md.setAttribute("content", t("meta.description"));
     document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
-    document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
-    renderMarquee();
+    document.querySelector(".hero__title").innerHTML = L.title.map((line) => `<span>${esc(line)}</span>`).join("");
+    document.querySelector("[data-sales]").textContent = L.salesValue;
+    document.getElementById("lang-select").value = code;
+    const half = L.marquee.map((w) => `<span>${esc(w)}</span><span class="sep">★</span>`).join("");
+    document.querySelector(".marquee__track").innerHTML = half + half;
     renderFilters();
     renderTimeline();
+    renderMemes();
     renderShare();
-    if (!daysAnimating) daysEl.textContent = fmt(daysTarget);
+    updateLive();
     tick();
   }
-  document.querySelector(".lang").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-lang]");
-    if (!b || b.dataset.lang === lang) return;
-    store.set(b.dataset.lang);
-    applyLang(b.dataset.lang);
+  function switchLang(code) {
+    ensureFont(code);
+    ensureLocale(code).then(applyLang);
+  }
+  document.getElementById("lang-select").addEventListener("change", (e) => {
+    store.set(e.target.value);
+    switchLang(e.target.value);
   });
 
-  /* ---------- Скролл: линия, шапка, параллакс ---------- */
+  /* ---------- Скролл: градиент, линия, шапка, параллакс ---------- */
+  const docEl = document.documentElement;
   const body = document.querySelector(".timeline__body");
   const fill = document.querySelector(".timeline__fill");
   const topbar = document.querySelector(".topbar");
 
   function onScroll() {
     const vh = window.innerHeight;
+    docEl.style.setProperty("--flow", `${(window.scrollY * 0.45).toFixed(1)}px`);
     const r = body.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / Math.max(1, r.height)));
     fill.style.transform = `scaleY(${p})`;
@@ -243,8 +341,7 @@
     yearNums.forEach((el) => {
       const rr = el.parentElement.getBoundingClientRect();
       if (rr.bottom < -200 || rr.top > vh + 200) return;
-      const off = Math.max(-36, Math.min(36, (rr.top - vh / 2) * -0.06));
-      el.style.transform = `translate3d(0, ${off}px, 0)`;
+      el.style.transform = `translate3d(0, ${Math.max(-36, Math.min(36, (rr.top - vh / 2) * -0.06))}px, 0)`;
     });
   }
   let ticking = false;
@@ -256,31 +353,9 @@
   window.addEventListener("resize", onScroll);
 
   /* ---------- Старт ---------- */
-  applyLang(lang);
+  const first = initialLang();
+  if (first === "en") applyLang("en"); else { applyLang("en"); switchLang(first); }
   if (tick()) { const id = setInterval(() => { if (!tick()) clearInterval(id); }, 1000); }
-
-  if ("IntersectionObserver" in window && !reduceMotion) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } });
-    }, { rootMargin: "0px 0px -10% 0px" });
-    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
-
-    // Счётчик дней «доезжает» до значения, когда блок попадает в кадр.
-    const dio = new IntersectionObserver(([en]) => {
-      if (!en.isIntersecting) return;
-      dio.disconnect();
-      daysAnimating = true;
-      const t0 = performance.now(), dur = 1600;
-      const step = (now) => {
-        const k = Math.min(1, (now - t0) / dur);
-        daysEl.textContent = fmt(Math.round(daysTarget * (0.85 + 0.15 * (1 - Math.pow(1 - k, 4)))));
-        if (k < 1) requestAnimationFrame(step); else daysAnimating = false;
-      };
-      requestAnimationFrame(step);
-    }, { threshold: 0.4 });
-    dio.observe(daysEl);
-  } else {
-    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-in"));
-  }
-  requestAnimationFrame(() => document.documentElement.classList.add("is-loaded"));
+  setInterval(updateLive, reduceMotion ? 1000 : 120);
+  requestAnimationFrame(() => docEl.classList.add("is-loaded"));
 })();
