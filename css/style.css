@@ -369,6 +369,15 @@ html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; li
 .share { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin-top: 56px; }
 .share__title { width: 100%; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
 
+/* ============ Credit ============ */
+.credit { margin: 72px 0 0; font: 600 clamp(18px, 1.8vw, 24px)/1.4 var(--font); letter-spacing: -0.01em; color: var(--body); }
+.credit__heart { color: var(--pink); display: inline-block; animation: credit-beat 1.6s var(--ease) infinite; }
+.credit__link { font-weight: 800; text-decoration: none; background: var(--flow-grad); -webkit-background-clip: text; background-clip: text; color: transparent; border-bottom: 2px solid rgba(242, 114, 182, .45); transition: border-color .2s; }
+.credit__link:hover, .credit__link:focus-visible { border-color: var(--pink); }
+.credit__note { display: block; margin-top: 8px; font-size: 14px; font-weight: 500; color: var(--muted); }
+@keyframes credit-beat { 0%, 60%, 100% { transform: scale(1); } 30% { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .credit__heart { animation: none; } }
+
 /* ============ Footer ============ */
 .footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 28px var(--gutter) calc(28px + env(safe-area-inset-bottom, 0px)); font-weight: 500; font-size: 14px; color: var(--muted); }
 .footer p { margin: 0; max-width: 680px; }
