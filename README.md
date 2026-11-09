@@ -48,7 +48,7 @@ python3 -m http.server 8000
 
 ## Деплой
 
-Сайт статический и размещён на Vercel: проект `long-road-gta6`, адрес https://long-road-gta6.vercel.app. Сборка не нужна.
+Сайт статический и размещён на Vercel: проект `long-road-gta6`, адрес https://grandrecap.vercel.app. Сборка не нужна.
 `vercel.json` задаёт кэширование шрифтов, картинок и скриптов.
 
 Если домен поменяется, обнови его в `index.html`: `canonical`, `og:url`, `og:image` и `twitter:image`. Без абсолютного адреса в `og:image` X и Threads не покажут картинку в превью.
