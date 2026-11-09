@@ -20,7 +20,6 @@
     "stats.birthsNote": "Tahmin: yılda yaklaşık 135 milyon doğum, BM verileri",
     "stats.km": "km yol aldı Dünya, Güneş'in etrafında",
     "stats.hours": "saat bekleme",
-    "stats.moons": "dolunay",
     "stats.kids": "yaşında: GTA V'in çıktığı gün doğan çocuklar. GTA VI 17+ olduğu için hâlâ kendileri satın alamıyorlar",
     "stats.sales": "kopya GTA V satıldı",
     "stats.salesNote": "Take-Two, Haziran 2026",

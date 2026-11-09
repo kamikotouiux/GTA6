@@ -20,7 +20,6 @@
     "stats.birthsNote": "推計：年間約1億3500万人の出生（国連データ）",
     "stats.km": "km、地球が太陽のまわりを進んだ距離",
     "stats.hours": "時間待った",
-    "stats.moons": "回の満月",
     "stats.kids": "歳：GTA Vの発売日に生まれた子どもの年齢。GTA VIは17歳以上対象なので、まだ自分では買えません",
     "stats.sales": "本、GTA Vの販売本数",
     "stats.salesNote": "Take-Two、2026年6月",

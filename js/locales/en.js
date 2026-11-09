@@ -20,7 +20,6 @@
     "stats.birthsNote": "Estimate: about 135 million births a year, UN data",
     "stats.km": "km travelled by Earth around the Sun",
     "stats.hours": "hours of waiting",
-    "stats.moons": "full moons",
     "stats.kids": "years old: kids born on GTA V's launch day. GTA VI is rated M, so they still can't buy it themselves",
     "stats.sales": "copies of GTA V sold",
     "stats.salesNote": "Take-Two, June 2026",

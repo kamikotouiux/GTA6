@@ -20,7 +20,6 @@
     "stats.birthsNote": "估算：每年约 1.35 亿新生儿，联合国数据",
     "stats.km": "公里：地球绕太阳走过的路程",
     "stats.hours": "小时的等待",
-    "stats.moons": "次满月",
     "stats.kids": "岁：GTA V 发售当天出生的孩子。GTA VI 为 17+ 评级，他们还不能自己买",
     "stats.sales": "份 GTA V 已售出",
     "stats.salesNote": "Take-Two，2026 年 6 月",

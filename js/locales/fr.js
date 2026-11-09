@@ -20,7 +20,6 @@
     "stats.birthsNote": "Estimation : environ 135 millions de naissances par an, données de l'ONU",
     "stats.km": "km parcourus par la Terre autour du Soleil",
     "stats.hours": "heures d'attente",
-    "stats.moons": "pleines lunes",
     "stats.kids": "ans : l'âge des enfants nés le jour de la sortie de GTA V. GTA VI est déconseillé aux moins de 17 ans, ils ne peuvent toujours pas l'acheter seuls",
     "stats.sales": "exemplaires de GTA V vendus",
     "stats.salesNote": "Take-Two, juin 2026",

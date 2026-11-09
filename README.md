@@ -46,6 +46,9 @@ python3 -m http.server 8000
 
 У трейлеров превью подтягиваются с YouTube автоматически. Для остальных положи файл в `assets/events/` и пропиши `img` в `data.js`. Если картинка не загрузилась, карточка просто покажет постер или текст.
 
-## Перед публикацией
+## Деплой
 
-В `index.html` замени `SITE_URL` в `og:image` и `twitter:image` на реальный домен (например, `https://long-road-vi.vercel.app`), иначе X и Threads не покажут картинку в превью.
+Сайт статический и размещён на Vercel: проект `long-road-gta6`, адрес https://long-road-gta6.vercel.app. Сборка не нужна.
+`vercel.json` задаёт кэширование шрифтов, картинок и скриптов.
+
+Если домен поменяется, обнови его в `index.html`: `canonical`, `og:url`, `og:image` и `twitter:image`. Без абсолютного адреса в `og:image` X и Threads не покажут картинку в превью.

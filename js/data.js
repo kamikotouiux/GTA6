@@ -161,6 +161,5 @@ window.MEMES = [
 window.WAIT = {
   start: "2013-09-17T00:00:00",
   birthsPerYear: 135e6,     // ≈ среднее по данным ООН за 2013–2026 (132–140 млн в год)
-  earthKmPerSec: 29.78,     // орбитальная скорость Земли
-  synodicMonthDays: 29.530589
+  earthKmPerSec: 29.78      // орбитальная скорость Земли
 };

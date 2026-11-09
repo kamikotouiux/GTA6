@@ -52,18 +52,30 @@
   const t = (k) => (L.ui[k] !== undefined ? L.ui[k] : window.LOCALES.en.ui[k]);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const cap = (s) => s.charAt(0).toLocaleUpperCase(L.intl) + s.slice(1);
+  // Форматтеры создаются один раз на язык, а не на каждый вызов.
+  let fmt = null;
+  function makeFormatters(intl) {
+    const dates = new Map();
+    return {
+      plural: new Intl.PluralRules(intl),
+      num: new Intl.NumberFormat(intl),
+      date(o) {
+        const key = JSON.stringify(o);
+        if (!dates.has(key)) dates.set(key, new Intl.DateTimeFormat(intl, Object.assign({ timeZone: "UTC" }, o)));
+        return dates.get(key);
+      }
+    };
+  }
   const plural = (unit, n) => {
     const forms = L.units[unit];
-    const key = new Intl.PluralRules(L.intl).select(n);
-    return forms[key] || forms.other;
+    return forms[fmt.plural.select(n)] || forms.other;
   };
-  let numFmt = new Intl.NumberFormat("en-US");
 
   function fmtDate(iso, opts) {
     const [y, m, d] = iso.split("-").map(Number);
     const date = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
     const o = opts || (d ? { day: "numeric", month: "long", year: "numeric" } : m ? { month: "long", year: "numeric" } : { year: "numeric" });
-    const s = new Intl.DateTimeFormat(L.intl, Object.assign({ timeZone: "UTC" }, o)).format(date);
+    const s = fmt.date(o).format(date);
     return cap(s.replace(/\s?г\.$/, ""));
   }
   const eventDate = (ev) => (L.dates && L.dates[ev.id]) || fmtDate(ev.date);
@@ -126,6 +138,7 @@
   const filtersEl = document.querySelector(".filters");
   let yearIO = null;
   let yearNums = [];
+  let flowEls = [];
   const wide = window.matchMedia("(min-width: 861px)");
   if (wide.addEventListener) wide.addEventListener("change", () => renderTimeline());
 
@@ -223,6 +236,7 @@
     }, { rootMargin: "-45% 0px -50% 0px" });
     root.querySelectorAll(".year").forEach((s) => yearIO.observe(s));
     yearNums = [...root.querySelectorAll(".year__num")];
+    flowEls = [...document.querySelectorAll(".flow")];
     if (lenis) lenis.resize();
     paintLine();
     onScroll();
@@ -266,10 +280,11 @@
     age: document.querySelector('[data-live="age"]')
   };
   function updateLive() {
+    if (!fmt) return;
     const now = Math.min(Date.now(), RELEASE.getTime());
     const sec = (now - START.getTime()) / 1000;
     const years = sec / (365.2425 * 86400);
-    const set = (el, v) => { const s = numFmt.format(v); if (el && el.textContent !== s) el.textContent = s; };
+    const set = (el, v) => { const s = fmt.num.format(v); if (el && el.textContent !== s) el.textContent = s; };
     set(live.births, Math.floor(years * WAIT.birthsPerYear));
     set(live.km, Math.floor(sec * WAIT.earthKmPerSec));
     set(live.hours, Math.floor(sec / 3600));
@@ -286,19 +301,33 @@
     if (th) th.href = `https://www.threads.net/intent/post?text=${encodeURIComponent(text + " " + url)}`;
   }
   const copyBtn = document.querySelector('[data-share="copy"]');
+  function legacyCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
   copyBtn.addEventListener("click", () => {
-    if (!navigator.clipboard || !navigator.clipboard.writeText) return;
-    navigator.clipboard.writeText(shareUrl()).then(() => {
-      copyBtn.textContent = t("share.copied");
-      setTimeout(() => (copyBtn.textContent = t("share.copy")), 2000);
-    }, () => {});
+    const url = shareUrl();
+    const done = (ok) => {
+      // Если скопировать не вышло, показываем саму ссылку, чтобы её можно было выделить.
+      copyBtn.textContent = ok ? t("share.copied") : url;
+      setTimeout(() => (copyBtn.textContent = t("share.copy")), ok ? 2000 : 8000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => done(true), () => done(legacyCopy(url)));
+    } else done(legacyCopy(url));
   });
 
   /* ---------- Применить язык ---------- */
   function applyLang(code) {
     lang = code;
     L = window.LOCALES[code];
-    numFmt = new Intl.NumberFormat(L.intl);
+    fmt = makeFormatters(L.intl);
     document.documentElement.lang = code;
     document.title = t("meta.title");
     const md = document.querySelector('meta[name="description"]');
@@ -317,9 +346,14 @@
     updateLive();
     tick();
   }
+  let requested = null;
   function switchLang(code) {
+    requested = code;
     ensureFont(code);
-    ensureLocale(code).then(applyLang);
+    return ensureLocale(code).then((ready) => {
+      if (requested !== code) return; // пользователь уже выбрал другой язык
+      applyLang(ready);
+    });
   }
   document.getElementById("lang-select").addEventListener("change", (e) => {
     store.set(e.target.value);
@@ -346,19 +380,22 @@
   const topbar = document.querySelector(".topbar");
 
   function onScroll() {
+    // Сначала все чтения геометрии, потом все записи — без принудительных перекомпоновок.
     const vh = window.innerHeight;
-    docEl.style.setProperty("--flow", `${(window.scrollY * 0.45).toFixed(1)}px`);
+    const y = window.scrollY;
     const r = body.getBoundingClientRect();
+    const shifts = reduceMotion ? [] : yearNums.map((el) => {
+      const rr = el.parentElement.getBoundingClientRect();
+      return rr.bottom < -200 || rr.top > vh + 200 ? null : Math.max(-36, Math.min(36, (rr.top - vh / 2) * -0.06));
+    });
+
+    const flow = `${(y * 0.45).toFixed(1)}px`;
+    flowEls.forEach((el) => el.style.setProperty("--flow", flow));
     const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / Math.max(1, r.height)));
     fill.style.clipPath = `inset(0 0 ${((1 - p) * 100).toFixed(2)}% 0)`;
     yearnav.classList.toggle("is-visible", r.top < vh * 0.6 && r.bottom > vh * 0.4);
-    topbar.classList.toggle("is-scrolled", window.scrollY > 40);
-    if (reduceMotion) return;
-    yearNums.forEach((el) => {
-      const rr = el.parentElement.getBoundingClientRect();
-      if (rr.bottom < -200 || rr.top > vh + 200) return;
-      el.style.transform = `translate3d(0, ${Math.max(-36, Math.min(36, (rr.top - vh / 2) * -0.06))}px, 0)`;
-    });
+    topbar.classList.toggle("is-scrolled", y > 40);
+    shifts.forEach((v, i) => { if (v !== null) yearNums[i].style.transform = `translate3d(0, ${v}px, 0)`; });
   }
   let ticking = false;
   window.addEventListener("scroll", () => {
@@ -372,8 +409,24 @@
 
   /* ---------- Старт ---------- */
   const first = initialLang();
-  if (first === "en") applyLang("en"); else { applyLang("en"); switchLang(first); }
-  if (tick()) { const id = setInterval(() => { if (!tick()) clearInterval(id); }, 1000); }
-  setInterval(updateLive, reduceMotion ? 1000 : 120);
-  requestAnimationFrame(() => docEl.classList.add("is-loaded"));
+  const start = () => {
+    if (tick()) { const id = setInterval(() => { if (!tick()) clearInterval(id); }, 1000); }
+    requestAnimationFrame(() => docEl.classList.add("is-loaded"));
+  };
+  // Не рисуем страницу на английском, если нужен другой язык: ждём его файл.
+  if (first === "en") { applyLang("en"); start(); }
+  else switchLang(first).then(() => { if (!fmt) applyLang("en"); start(); });
+
+  let liveTimer = null, liveVisible = false;
+  const syncLive = () => {
+    const on = liveVisible && !document.hidden;
+    if (on && !liveTimer) { updateLive(); liveTimer = setInterval(updateLive, reduceMotion ? 1000 : 120); }
+    if (!on && liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+  };
+  const numbers = document.getElementById("numbers");
+  if ("IntersectionObserver" in window && numbers) {
+    new IntersectionObserver(([en]) => { liveVisible = en.isIntersecting; syncLive(); }).observe(numbers);
+  } else { liveVisible = true; }
+  document.addEventListener("visibilitychange", syncLive);
+  syncLive();
 })();

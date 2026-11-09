@@ -20,7 +20,6 @@
     "stats.birthsNote": "Estimación: unos 135 millones de nacimientos al año, datos de la ONU",
     "stats.km": "km recorridos por la Tierra alrededor del Sol",
     "stats.hours": "horas de espera",
-    "stats.moons": "lunas llenas",
     "stats.kids": "años tienen los niños nacidos el día del lanzamiento de GTA V. GTA VI es para mayores de 17, así que aún no pueden comprarlo",
     "stats.sales": "copias de GTA V vendidas",
     "stats.salesNote": "Take-Two, junio de 2026",
