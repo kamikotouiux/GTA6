@@ -148,8 +148,13 @@ html[lang="ja"] .section-title, html[lang="zh"] .section-title { letter-spacing:
     radial-gradient(120% 60% at 70% 100%, rgba(247, 192, 143, .55) 0%, rgba(244, 114, 182, .35) 35%, transparent 70%),
     linear-gradient(180deg, #0d0b1b 0%, #171231 30%, #2d1d4b 58%, #5b2a5e 78%, #a24a78 92%, #d9768c 100%);
 }
-.hero__sky::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20, 17, 38, .6) 0%, rgba(20, 17, 38, .15) 45%, rgba(20, 17, 38, .1) 80%, var(--bg) 100%); }
-.hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .6; }
+.hero__sky::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(20, 17, 38, .94) 0%, rgba(20, 17, 38, .78) 36%, rgba(20, 17, 38, .2) 68%, rgba(20, 17, 38, 0) 100%),
+    linear-gradient(180deg, rgba(20, 17, 38, .55) 0%, rgba(20, 17, 38, 0) 22%, rgba(20, 17, 38, 0) 72%, var(--bg) 100%);
+}
+.hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 72% 35%; }
 .hero__content { width: 100%; max-width: 1400px; margin: 0 auto; }
 .hero__title {
   margin: 0;
@@ -373,6 +378,8 @@ html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; li
 @media (max-width: 860px) {
   .topbar { gap: 10px; }
   .hero { padding-top: 120px; }
+  .hero__img { object-position: 62% 30%; }
+  .hero__sky::after { background: linear-gradient(180deg, rgba(20, 17, 38, .82) 0%, rgba(20, 17, 38, .74) 50%, rgba(20, 17, 38, .6) 78%, var(--bg) 100%); }
   .hero__actions { align-items: flex-start; }
 
   .timeline__line { left: calc(var(--gutter) + 7px); }

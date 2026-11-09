@@ -132,11 +132,15 @@
   const PLAY = '<span class="card__play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5 3.5v13l11-6.5z"/></svg></span>';
 
   function mediaHTML(ev) {
+    if (ev.img && ev.yt) {
+      return `<a class="card__media" href="https://www.youtube.com/watch?v=${ev.yt}" target="_blank" rel="noopener" aria-label="${esc(t("card.watch"))}">
+        <img src="${esc(ev.img)}" alt="" loading="lazy" decoding="async">${PLAY}</a>`;
+    }
     if (ev.yt) {
       return `<a class="card__media" href="https://www.youtube.com/watch?v=${ev.yt}" target="_blank" rel="noopener" aria-label="${esc(t("card.watch"))}">
         <img src="https://i.ytimg.com/vi/${ev.yt}/maxresdefault.jpg" alt="" loading="lazy" data-yt="${ev.yt}">${PLAY}</a>`;
     }
-    if (ev.img) return `<div class="card__media"><img src="${esc(ev.img)}" alt="" loading="lazy"></div>`;
+    if (ev.img) return `<div class="card__media"><img src="${esc(ev.img)}" alt="" loading="lazy" decoding="async"></div>`;
     if (ev.poster) return `<div class="card__poster" aria-hidden="true"><span class="flow">${esc(ev.poster)}</span></div>`;
     return "";
   }
