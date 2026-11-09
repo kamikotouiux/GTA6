@@ -4,12 +4,38 @@
   // Релиз: 19 ноября 2026, полночь по локальному времени зрителя.
   const RELEASE = new Date(2026, 10, 19, 0, 0, 0);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const I18N = window.I18N, CATS = window.CATEGORIES, ERAS = window.ERAS;
+  const events = [...window.EVENTS].sort((a, b) => a.sort.localeCompare(b.sort));
+
+  /* ---------- Язык ---------- */
+  const store = {
+    get() { try { return localStorage.getItem("lang"); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem("lang", v); } catch (e) { /* приватный режим */ } }
+  };
+  function detectLang() {
+    const q = new URLSearchParams(location.search).get("lang");
+    if (q === "ru" || q === "en") return q;
+    const saved = store.get();
+    if (saved === "ru" || saved === "en") return saved;
+    const nav = (navigator.languages || [navigator.language || "ru"]).join(",").toLowerCase();
+    return /(^|,)(ru|uk|be|kk)/.test(nav) ? "ru" : "en";
+  }
+  let lang = detectLang();
+  let filter = "all";
+  const t = (k) => (I18N[lang] && I18N[lang][k] !== undefined ? I18N[lang][k] : I18N.ru[k]);
+  const L = (obj) => (obj && typeof obj === "object" ? obj[lang] || obj.ru : obj);
+  const plural = new Map();
+  const unitLabel = (unit, n) => {
+    if (!plural.has(lang)) plural.set(lang, new Intl.PluralRules(lang));
+    const forms = t("units")[unit];
+    return forms[plural.get(lang).select(n)] || forms.other;
+  };
 
   /* ---------- Плавный скролл ---------- */
   let lenis = null;
   if (window.Lenis && !reduceMotion) {
     lenis = new window.Lenis({ lerp: 0.09, smoothWheel: true });
-    const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+    const raf = (time) => { lenis.raf(time); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
   }
   const scrollToEl = (el) => {
@@ -17,15 +43,13 @@
     if (lenis) lenis.scrollTo(el, { offset: -90 });
     else el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   };
-  document.querySelectorAll('a[href^="#"]').forEach((a) => {
-    a.addEventListener("click", (e) => {
-      const id = a.getAttribute("href");
-      const target = id === "#top" ? document.body : document.querySelector(id);
-      if (!target) return;
-      e.preventDefault();
-      if (id === "#top") { lenis ? lenis.scrollTo(0) : window.scrollTo({ top: 0, behavior: "smooth" }); }
-      else scrollToEl(target);
-    });
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href");
+    e.preventDefault();
+    if (id === "#top") { lenis ? lenis.scrollTo(0) : window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); }
+    else scrollToEl(document.querySelector(id));
   });
 
   /* ---------- Таймер ---------- */
@@ -36,184 +60,190 @@
   function tick() {
     const diff = RELEASE - Date.now();
     if (diff <= 0) {
-      timers.forEach((t) => t.classList.add("is-done"));
-      timers.forEach((t) => (t.innerHTML = '<p class="countdown__done">Она вышла.</p>'));
-      if (inline) inline.textContent = "Вышла";
+      timers.forEach((el) => (el.innerHTML = `<p class="countdown__done">${t("countdown.done")}</p>`));
+      if (inline) inline.textContent = t("countdown.inlineDone");
       return false;
     }
     const s = Math.floor(diff / 1000);
-    const parts = {
-      d: Math.floor(s / 86400),
-      h: Math.floor((s % 86400) / 3600),
-      m: Math.floor((s % 3600) / 60),
-      s: s % 60
-    };
-    timers.forEach((t) => {
+    const parts = { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
+    timers.forEach((el) => {
       for (const k in parts) {
-        const el = t.querySelector(`[data-unit="${k}"]`);
+        const num = el.querySelector(`[data-unit="${k}"]`);
+        const lab = el.querySelector(`[data-label="${k}"]`);
         const v = pad(parts[k]);
-        if (el && el.textContent !== v) {
-          el.textContent = v;
-          if (k === "s" && !reduceMotion) { el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); }
+        if (num && num.textContent !== v) {
+          num.textContent = v;
+          if (k === "s" && !reduceMotion) { num.classList.remove("tick"); void num.offsetWidth; num.classList.add("tick"); }
         }
+        if (lab) { const l = unitLabel(k, parts[k]); if (lab.textContent !== l) lab.textContent = l; }
       }
     });
-    if (inline) inline.textContent = `${parts.d}д ${pad(parts.h)}:${pad(parts.m)}:${pad(parts.s)}`;
+    if (inline) inline.textContent = `${parts.d}${t("countdown.d")} ${pad(parts.h)}:${pad(parts.m)}:${pad(parts.s)}`;
     return true;
   }
-  if (tick()) { const id = setInterval(() => { if (!tick()) clearInterval(id); }, 1000); }
 
-  /* ---------- Рендер таймлайна ---------- */
-  const CATS = window.CATEGORIES;
-  const ERAS = window.ERAS;
-  const events = [...window.EVENTS].sort((a, b) => a.sort.localeCompare(b.sort));
+  /* ---------- Таймлайн ---------- */
   const root = document.getElementById("events");
   const yearnav = document.querySelector(".yearnav");
-
-  const groups = new Map();
-  events.forEach((ev) => {
-    const y = ev.sort.slice(0, 4);
-    if (!groups.has(y)) groups.set(y, []);
-    groups.get(y).push(ev);
-  });
-
+  const filtersEl = document.querySelector(".filters");
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let yearIO = null;
+  let yearNums = [];
 
-  let side = 0;
-  const frag = document.createDocumentFragment();
-  groups.forEach((list, year) => {
-    const sec = document.createElement("section");
-    sec.className = "year";
-    sec.id = `y${year}`;
-    sec.dataset.year = year;
-    sec.innerHTML = `
-      <header class="year__head">
-        <span class="year__num" aria-hidden="true">${year}</span>
-        <h3 class="year__title"><span class="visually-hidden">${year}. </span>${esc(ERAS[year] || "")}</h3>
-      </header>
-      <div class="year__cards"></div>`;
-    const cards = sec.querySelector(".year__cards");
-    list.forEach((ev) => {
-      const cat = CATS[ev.cat] || { label: ev.cat, color: "#fff" };
-      const card = document.createElement("article");
-      card.className = `card reveal ${side++ % 2 ? "card--right" : "card--left"}${ev.major ? " card--major" : ""}${ev.draft ? " card--draft" : ""}`;
-      card.dataset.cat = ev.cat;
-      card.style.setProperty("--accent", cat.color);
-      card.innerHTML = `
-        <span class="card__dot" aria-hidden="true"></span>
-        <div class="card__inner">
-          <div class="card__meta">
-            <time datetime="${esc(ev.sort)}">${esc(ev.date)}</time>
-            <span class="tag">${esc(cat.label)}</span>
-            ${ev.draft ? '<span class="tag tag--draft">Черновик</span>' : ""}
-          </div>
-          <h4 class="card__title">${esc(ev.title)}</h4>
-          <p class="card__text">${esc(ev.text)}</p>
-          ${ev.source ? `<a class="card__link" href="${esc(ev.source)}" target="_blank" rel="noopener">Источник ↗</a>` : ""}
-        </div>`;
-      cards.appendChild(card);
+  function renderTimeline() {
+    const groups = new Map();
+    events.forEach((ev) => {
+      if (filter !== "all" && ev.cat !== filter) return;
+      const y = ev.sort.slice(0, 4);
+      if (!groups.has(y)) groups.set(y, []);
+      groups.get(y).push(ev);
     });
-    frag.appendChild(sec);
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = year;
-    btn.dataset.year = year;
-    btn.addEventListener("click", () => scrollToEl(sec));
-    yearnav.appendChild(btn);
-  });
-  root.appendChild(frag);
+    root.innerHTML = "";
+    yearnav.innerHTML = "";
+    let side = 0;
+    groups.forEach((list, year) => {
+      const sec = document.createElement("section");
+      sec.className = "year";
+      sec.id = `y${year}`;
+      sec.dataset.year = year;
+      sec.innerHTML = `
+        <header class="year__head is-in">
+          <span class="year__num" aria-hidden="true">${year}</span>
+          <h3 class="year__title"><span class="visually-hidden">${year}. </span>${esc(L(ERAS[year]) || "")}</h3>
+        </header>
+        <div class="year__cards"></div>`;
+      const cards = sec.querySelector(".year__cards");
+      list.forEach((ev) => {
+        const cat = CATS[ev.cat] || { ru: ev.cat, en: ev.cat, color: "#fff" };
+        const card = document.createElement("article");
+        card.className = `card ${side++ % 2 ? "card--right" : "card--left"}${ev.major ? " card--major" : ""}${ev.draft ? " card--draft" : ""}`;
+        card.dataset.cat = ev.cat;
+        card.style.setProperty("--accent", cat.color);
+        card.innerHTML = `
+          <span class="card__dot" aria-hidden="true"></span>
+          <div class="card__inner">
+            <div class="card__meta">
+              <time datetime="${esc(ev.sort)}">${esc(L(ev.date))}</time>
+              <span class="tag">${esc(L(cat))}</span>
+              ${ev.draft ? `<span class="tag tag--draft">${esc(t("card.draft"))}</span>` : ""}
+            </div>
+            <h4 class="card__title">${esc(L(ev.title))}</h4>
+            <p class="card__text">${esc(L(ev.text))}</p>
+            ${ev.source ? `<a class="card__link" href="${esc(ev.source)}" target="_blank" rel="noopener">${esc(t("card.source"))} ↗</a>` : ""}
+          </div>`;
+        cards.appendChild(card);
+      });
+      root.appendChild(sec);
 
-  /* ---------- Фильтры ---------- */
-  const filters = document.querySelector(".filters");
-  const used = [...new Set(events.map((e) => e.cat))];
-  const mkChip = (key, label, color) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.dataset.filter = key;
-    b.style.setProperty("--accent", color);
-    b.innerHTML = `<i></i>${label}`;
-    b.setAttribute("aria-pressed", key === "all" ? "true" : "false");
-    filters.appendChild(b);
-  };
-  mkChip("all", "Всё", "#fff");
-  Object.keys(CATS).filter((k) => used.includes(k)).forEach((k) => mkChip(k, CATS[k].label, CATS[k].color));
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = year;
+      btn.dataset.year = year;
+      btn.addEventListener("click", () => scrollToEl(sec));
+      yearnav.appendChild(btn);
+    });
 
-  filters.addEventListener("click", (e) => {
+    if (yearIO) yearIO.disconnect();
+    const navBtns = [...yearnav.querySelectorAll("button")];
+    yearIO = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) navBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.year === en.target.dataset.year));
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    root.querySelectorAll(".year").forEach((s) => yearIO.observe(s));
+    yearNums = [...root.querySelectorAll(".year__num")];
+    if (lenis) lenis.resize();
+    onScroll();
+  }
+
+  function renderFilters() {
+    const used = new Set(events.map((e) => e.cat));
+    const chips = [["all", t("filters.all"), "var(--text)"]].concat(
+      Object.keys(CATS).filter((k) => used.has(k)).map((k) => [k, L(CATS[k]), CATS[k].color])
+    );
+    filtersEl.innerHTML = chips.map(([k, label, color]) =>
+      `<button type="button" class="chip" data-filter="${k}" style="--accent:${color}" aria-pressed="${k === filter}"><i></i>${esc(label)}</button>`
+    ).join("");
+  }
+  filtersEl.addEventListener("click", (e) => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
-    const f = chip.dataset.filter;
-    filters.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
-    let n = 0;
-    document.querySelectorAll(".year").forEach((sec) => {
-      let visible = 0;
-      sec.querySelectorAll(".card").forEach((card) => {
-        const show = f === "all" || card.dataset.cat === f;
-        card.hidden = !show;
-        if (show) {
-          visible++;
-          card.classList.toggle("card--left", n % 2 === 0);
-          card.classList.toggle("card--right", n % 2 === 1);
-          card.classList.add("is-in");
-          n++;
-        }
-      });
-      sec.hidden = visible === 0;
-      const navBtn = yearnav.querySelector(`[data-year="${sec.dataset.year}"]`);
-      if (navBtn) navBtn.hidden = visible === 0;
-    });
-    if (lenis) lenis.resize();
-    updateFill();
+    filter = chip.dataset.filter;
+    filtersEl.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+    renderTimeline();
   });
 
-  /* ---------- Появление при скролле ---------- */
-  if ("IntersectionObserver" in window && !reduceMotion) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
-      });
-    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
-    document.querySelectorAll(".reveal, .year__head").forEach((el) => io.observe(el));
-  } else {
-    document.querySelectorAll(".reveal, .year__head").forEach((el) => el.classList.add("is-in"));
+  /* ---------- Бегущая строка и шеринг ---------- */
+  function renderMarquee() {
+    const half = t("marquee").map((w) => `<span>${esc(w)}</span><span class="sep">★</span>`).join("");
+    document.querySelector(".marquee__track").innerHTML = half + half;
   }
+  const shareUrl = () => location.href.split("#")[0];
+  function renderShare() {
+    const text = t("share.text");
+    const url = shareUrl();
+    const x = document.querySelector('[data-share="x"]');
+    const th = document.querySelector('[data-share="threads"]');
+    if (x) x.href = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    if (th) th.href = `https://www.threads.net/intent/post?text=${encodeURIComponent(text + " " + url)}`;
+  }
+  const copyBtn = document.querySelector('[data-share="copy"]');
+  if (copyBtn) copyBtn.addEventListener("click", () => {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+    navigator.clipboard.writeText(shareUrl()).then(() => {
+      copyBtn.textContent = t("share.copied");
+      setTimeout(() => (copyBtn.textContent = t("share.copy")), 2000);
+    }, () => {});
+  });
 
-  /* ---------- Активный год в навигации ---------- */
-  const navBtns = [...yearnav.querySelectorAll("button")];
-  const yearIO = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (en.isIntersecting) {
-        const y = en.target.dataset.year;
-        navBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.year === y));
-      }
-    });
-  }, { rootMargin: "-45% 0px -50% 0px" });
-  document.querySelectorAll(".year").forEach((s) => yearIO.observe(s));
+  /* ---------- Счётчик дней ---------- */
+  const daysEl = document.querySelector("[data-days-since]");
+  const daysTarget = Math.floor((Math.min(Date.now(), RELEASE.getTime()) - new Date(daysEl.dataset.daysSince + "T00:00:00")) / 86400000);
+  const fmt = (n) => n.toLocaleString(lang === "ru" ? "ru-RU" : "en-US");
+  let daysAnimating = false;
 
-  /* ---------- Прогресс линии и параллакс ---------- */
+  /* ---------- Применить язык ---------- */
+  function applyLang(next) {
+    lang = next;
+    document.documentElement.lang = lang;
+    document.title = t("meta.title");
+    const md = document.querySelector('meta[name="description"]');
+    if (md) md.setAttribute("content", t("meta.description"));
+    document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
+    document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    renderMarquee();
+    renderFilters();
+    renderTimeline();
+    renderShare();
+    if (!daysAnimating) daysEl.textContent = fmt(daysTarget);
+    tick();
+  }
+  document.querySelector(".lang").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-lang]");
+    if (!b || b.dataset.lang === lang) return;
+    store.set(b.dataset.lang);
+    applyLang(b.dataset.lang);
+  });
+
+  /* ---------- Скролл: линия, шапка, параллакс ---------- */
   const body = document.querySelector(".timeline__body");
   const fill = document.querySelector(".timeline__fill");
-  const sun = document.querySelector(".hero__sun");
-  const yearNums = [...document.querySelectorAll(".year__num")];
+  const topbar = document.querySelector(".topbar");
 
-  function updateFill() {
-    const r = body.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / r.height));
-    fill.style.transform = `scaleY(${p})`;
-    document.querySelector(".yearnav").classList.toggle("is-visible", r.top < vh * 0.6 && r.bottom > vh * 0.4);
-  }
   function onScroll() {
-    updateFill();
-    if (reduceMotion) return;
-    const y = window.scrollY;
-    if (sun && y < window.innerHeight * 1.2) sun.style.transform = `translate(-50%, ${y * 0.35}px)`;
     const vh = window.innerHeight;
+    const r = body.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (vh * 0.55 - r.top) / Math.max(1, r.height)));
+    fill.style.transform = `scaleY(${p})`;
+    yearnav.classList.toggle("is-visible", r.top < vh * 0.6 && r.bottom > vh * 0.4);
+    topbar.classList.toggle("is-scrolled", window.scrollY > 40);
+    if (reduceMotion) return;
     yearNums.forEach((el) => {
-      const r = el.parentElement.getBoundingClientRect();
-      if (r.bottom < -200 || r.top > vh + 200) return;
-      const off = Math.max(-40, Math.min(40, (r.top - vh / 2) * -0.06));
+      const rr = el.parentElement.getBoundingClientRect();
+      if (rr.bottom < -200 || rr.top > vh + 200) return;
+      const off = Math.max(-36, Math.min(36, (rr.top - vh / 2) * -0.06));
       el.style.transform = `translate3d(0, ${off}px, 0)`;
     });
   }
@@ -224,29 +254,33 @@
     requestAnimationFrame(() => { onScroll(); ticking = false; });
   }, { passive: true });
   window.addEventListener("resize", onScroll);
-  onScroll();
 
-  /* ---------- Счётчик дней ожидания ---------- */
-  document.querySelectorAll("[data-days-since]").forEach((el) => {
-    const from = new Date(el.dataset.daysSince + "T00:00:00");
-    const end = Math.min(Date.now(), RELEASE.getTime());
-    const target = Math.floor((end - from) / 86400000);
-    const fmt = (n) => n.toLocaleString("ru-RU");
-    if (reduceMotion || !("IntersectionObserver" in window)) { el.textContent = fmt(target); return; }
-    const io = new IntersectionObserver(([en]) => {
+  /* ---------- Старт ---------- */
+  applyLang(lang);
+  if (tick()) { const id = setInterval(() => { if (!tick()) clearInterval(id); }, 1000); }
+
+  if ("IntersectionObserver" in window && !reduceMotion) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+    // Счётчик дней «доезжает» до значения, когда блок попадает в кадр.
+    const dio = new IntersectionObserver(([en]) => {
       if (!en.isIntersecting) return;
-      io.disconnect();
-      const t0 = performance.now(), dur = 1800;
-      const step = (t) => {
-        const k = Math.min(1, (t - t0) / dur);
-        const e = 1 - Math.pow(1 - k, 4);
-        el.textContent = fmt(Math.round(target * e));
-        if (k < 1) requestAnimationFrame(step);
+      dio.disconnect();
+      daysAnimating = true;
+      const t0 = performance.now(), dur = 1600;
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / dur);
+        daysEl.textContent = fmt(Math.round(daysTarget * (0.85 + 0.15 * (1 - Math.pow(1 - k, 4)))));
+        if (k < 1) requestAnimationFrame(step); else daysAnimating = false;
       };
       requestAnimationFrame(step);
     }, { threshold: 0.4 });
-    io.observe(el);
-  });
-
-  document.documentElement.classList.add("is-loaded");
+    dio.observe(daysEl);
+  } else {
+    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-in"));
+  }
+  requestAnimationFrame(() => document.documentElement.classList.add("is-loaded"));
 })();

@@ -2,96 +2,107 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Долгая дорога — хроника ожидания GTA VI</title>
-  <meta name="description" content="Неофициальный фанатский рекап тринадцати лет ожидания GTA VI: трейлеры, утечки, переносы, мемы и всё, что было между ними.">
-  <meta name="theme-color" content="#07060a">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Долгая дорога до VI</title>
+  <meta name="description" content="Неофициальный фанатский рекап 13 лет ожидания GTA VI: трейлеры, утечки, переносы, мемы и обратный отсчёт до 19 ноября 2026.">
+  <meta name="theme-color" content="#110d1a">
+
+  <!-- Превью для X / Threads. После деплоя заменить SITE_URL на реальный домен. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Долгая дорога до VI">
+  <meta property="og:description" content="13 лет ожидания GTA VI на одной странице: трейлеры, утечки, переносы и мемы.">
+  <meta property="og:image" content="SITE_URL/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Долгая дорога до VI">
+  <meta name="twitter:description" content="13 лет ожидания GTA VI на одной странице: трейлеры, утечки, переносы и мемы.">
+  <meta name="twitter:image" content="SITE_URL/og.png">
+
+  <link rel="preload" href="fonts/onest-cyrillic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/onest-cyrillic-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="topbar">
-    <a class="topbar__brand" href="#top">Долгая&nbsp;дорога</a>
+    <a class="topbar__brand" href="#top" data-i18n="brand">Долгая дорога</a>
     <nav class="topbar__nav">
-      <a href="#timeline">Хроника</a>
-      <a href="#finale">Финал</a>
+      <a href="#timeline" data-i18n="nav.timeline">Хроника</a>
+      <a href="#finale" data-i18n="nav.finale">Финал</a>
     </nav>
-    <div class="topbar__timer" aria-label="До релиза">
-      <span class="dot"></span><span data-countdown-inline>—</span>
+    <div class="lang" role="group" data-i18n-aria="lang.switch" aria-label="Язык">
+      <button type="button" data-lang="ru" aria-pressed="true">RU</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="topbar__timer">
+      <span class="dot" aria-hidden="true"></span><span data-countdown-inline>—</span>
     </div>
   </header>
 
   <main id="top">
     <!-- HERO -->
     <section class="hero">
-      <div class="hero__sun" aria-hidden="true"></div>
-      <div class="hero__horizon" aria-hidden="true"></div>
-
-      <p class="eyebrow hero__eyebrow">Хроника ожидания · 2013 — 2026</p>
-      <h1 class="hero__title">
-        <span class="line"><span>Долгая</span></span>
-        <span class="line"><span><em>дорога</em></span></span>
-        <span class="line"><span>до <b class="grad">VI</b></span></span>
-      </h1>
-      <div class="hero__bottom">
-      <p class="hero__lead">Тринадцать лет мемов, утечек, переносов и&nbsp;двух трейлеров. Мы&nbsp;собрали весь путь, чтобы его можно было пролистать за&nbsp;пять минут.</p>
-
-      <div class="hero__timer">
-      <div class="countdown" data-countdown aria-live="off">
-        <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label">дней</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label">часов</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label">минут</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label">секунд</span></div>
-      </div>
-      <p class="countdown__caption">до 19 ноября 2026</p>
-      </div>
+      <div class="hero__sky" aria-hidden="true">
+        <!-- Положи свою картинку в assets/hero.webp — она встанет фоном. Без неё остаётся градиент. -->
+        <img class="hero__img" src="assets/hero.webp" alt="" onerror="this.remove()">
       </div>
 
-      <a class="scroll-cue" href="#timeline"><span>Листай</span><i></i></a>
+      <div class="hero__content">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Хроника ожидания, 2013–2026</p>
+        <h1 class="hero__title" data-i18n="hero.title">Долгая дорога до VI.</h1>
+        <p class="hero__lead chill" data-i18n="hero.lead">Тринадцать лет мемов, утечек, переносов и двух трейлеров. Мы собрали весь путь на одной странице, чтобы его можно было пролистать за пять минут.</p>
+
+        <div class="hero__bottom">
+          <div class="countdown" data-countdown>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">дней</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">часов</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">минут</span></div>
+            <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">секунд</span></div>
+          </div>
+          <div class="hero__actions">
+            <p class="countdown__caption" data-i18n="hero.caption">до 19 ноября 2026</p>
+            <a class="btn" href="#timeline" data-i18n="hero.cta">Смотреть хронику</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- MARQUEE -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span>Ждём</span><span>★</span><span>Скоро</span><span>★</span><span>Ещё год</span><span>★</span><span>Трейлер 2 когда</span><span>★</span><span>Вайс-Сити</span><span>★</span><span>Перенос</span><span>★</span><span>Love is a long road</span><span>★</span>
-        <span>Ждём</span><span>★</span><span>Скоро</span><span>★</span><span>Ещё год</span><span>★</span><span>Трейлер 2 когда</span><span>★</span><span>Вайс-Сити</span><span>★</span><span>Перенос</span><span>★</span><span>Love is a long road</span><span>★</span>
-      </div>
-    </div>
+    <div class="marquee" aria-hidden="true"><div class="marquee__track"></div></div>
 
     <!-- STATS -->
     <section class="stats">
       <div class="stat reveal">
-        <span class="stat__num" data-days-since="2013-09-17">0</span>
-        <span class="stat__label">дней с&nbsp;выхода GTA&nbsp;V</span>
+        <span class="stat__num chill" data-days-since="2013-09-17">0</span>
+        <span class="stat__label" data-i18n="stats.days">дней с выхода GTA V</span>
       </div>
       <div class="stat reveal">
         <span class="stat__num">2</span>
-        <span class="stat__label">трейлера, которые разбирали покадрово</span>
+        <span class="stat__label" data-i18n="stats.trailers">трейлера, разобранных покадрово</span>
       </div>
       <div class="stat reveal">
         <span class="stat__num">2</span>
-        <span class="stat__label">переноса и&nbsp;одно «простите»</span>
+        <span class="stat__label" data-i18n="stats.delays">переноса и одно «простите»</span>
       </div>
       <div class="stat reveal">
         <span class="stat__num">90+</span>
-        <span class="stat__label">утёкших видео из&nbsp;ранней сборки</span>
+        <span class="stat__label" data-i18n="stats.leak">утёкших видео из ранней сборки</span>
       </div>
     </section>
 
     <!-- TIMELINE -->
     <section class="timeline" id="timeline">
       <div class="timeline__head">
-        <p class="eyebrow">Глава I — XIV</p>
-        <h2 class="section-title reveal">Хроника <em>ожидания</em></h2>
-        <div class="filters" role="toolbar" aria-label="Фильтр по типу события"></div>
+        <p class="eyebrow" data-i18n="timeline.eyebrow">Год за годом</p>
+        <h2 class="section-title" data-i18n="timeline.title">Хроника ожидания</h2>
+        <div class="filters" role="toolbar" data-i18n-aria="filters.label" aria-label="Фильтр по типу события"></div>
       </div>
 
       <div class="timeline__wrap">
-        <nav class="yearnav" aria-label="Годы"></nav>
+        <nav class="yearnav" data-i18n-aria="years.label" aria-label="Годы"></nav>
         <div class="timeline__body">
           <div class="timeline__line" aria-hidden="true"><div class="timeline__fill"></div></div>
           <div id="events"></div>
@@ -101,25 +112,33 @@
 
     <!-- FINALE -->
     <section class="finale" id="finale">
-      <div class="finale__sun" aria-hidden="true"></div>
-      <p class="eyebrow">Конец пути</p>
-      <h2 class="finale__date"><span>19</span><span>.11</span><span>.26</span></h2>
-      <p class="finale__lead">Леонида ждёт. Осталось совсем немного.</p>
+      <div class="finale__sky" aria-hidden="true"></div>
+      <p class="eyebrow" data-i18n="finale.eyebrow">Конец пути</p>
+      <h2 class="finale__date chill">19.11.26</h2>
+      <p class="finale__lead" data-i18n="finale.lead">Леонида ждёт. Осталось совсем немного.</p>
       <div class="countdown countdown--small" data-countdown>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label">дней</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label">часов</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label">минут</span></div>
-        <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label">секунд</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="d">00</span><span class="countdown__label" data-label="d">дней</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="h">00</span><span class="countdown__label" data-label="h">часов</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="m">00</span><span class="countdown__label" data-label="m">минут</span></div>
+        <div class="countdown__unit"><span class="countdown__num" data-unit="s">00</span><span class="countdown__label" data-label="s">секунд</span></div>
+      </div>
+
+      <div class="share">
+        <span class="share__title" data-i18n="share.title">Поделиться</span>
+        <a class="btn btn--ghost" data-share="x" href="https://x.com/intent/tweet" target="_blank" rel="noopener">X</a>
+        <a class="btn btn--ghost" data-share="threads" href="https://www.threads.net/intent/post" target="_blank" rel="noopener">Threads</a>
+        <button class="btn btn--ghost" type="button" data-share="copy" data-i18n="share.copy">Скопировать ссылку</button>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Неофициальный фанатский проект. Не связан с Rockstar Games и Take-Two Interactive. Все торговые марки принадлежат их владельцам.</p>
-    <a href="#top">Наверх ↑</a>
+    <p data-i18n="footer.disclaimer">Неофициальный фанатский проект. Не связан с Rockstar Games и Take-Two Interactive. Все торговые марки принадлежат их владельцам.</p>
+    <a href="#top" data-i18n="footer.top">Наверх ↑</a>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/events.js"></script>
   <script src="js/main.js"></script>
 </body>
