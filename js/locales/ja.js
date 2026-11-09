@@ -60,9 +60,6 @@
     s: { other: "秒" }
   },
   short: { d: "日", h: "時間", m: "分", s: "秒" },
-  salesValue: "2.3億+",
-  steamValue: "10万+",
-  greenValue: "約1300万",
   cats: {
     news: "ニュース", trailer: "トレーラー", delay: "延期", leak: "リーク", rumor: "うわさ",
     meme: "ミーム", cast: "キャスト", music: "音楽", remake: "リメイク", ads: "広告"

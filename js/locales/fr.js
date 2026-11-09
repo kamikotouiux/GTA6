@@ -60,9 +60,6 @@
     s: { one: "seconde", many: "secondes", other: "secondes" }
   },
   short: { d: "j", h: "h", m: "m", s: "s" },
-  salesValue: "230 M+",
-  steamValue: "100 000+",
-  greenValue: "≈13 M",
   cats: {
     news: "Actu", trailer: "Bande-annonce", delay: "Report", leak: "Fuite", rumor: "Rumeur",
     meme: "Mème", cast: "Casting", music: "Musique", remake: "Remakes", ads: "Marketing"

@@ -60,9 +60,6 @@
     s: { one: "секунда", few: "секунды", many: "секунд", other: "секунды" }
   },
   short: { d: "д", h: "ч", m: "м", s: "с" },
-  salesValue: "230 млн+",
-  steamValue: "100 000+",
-  greenValue: "≈13 млн",
   cats: {
     news: "Новость", trailer: "Трейлер", delay: "Перенос", leak: "Утечка", rumor: "Инсайд",
     meme: "Мем", cast: "Актёры", music: "Музыка", remake: "Переделки", ads: "Реклама"

@@ -60,9 +60,6 @@
     s: { one: "segundo", other: "segundos" }
   },
   short: { d: "d", h: "h", m: "m", s: "s" },
-  salesValue: "230 M+",
-  steamValue: "100 000+",
-  greenValue: "≈13 M",
   cats: {
     news: "Noticia", trailer: "Tráiler", delay: "Retraso", leak: "Filtración", rumor: "Rumor",
     meme: "Meme", cast: "Reparto", music: "Música", remake: "Remakes", ads: "Marketing"

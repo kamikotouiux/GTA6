@@ -60,9 +60,6 @@
     s: { one: "saniye", other: "saniye" }
   },
   short: { d: "g", h: "sa", m: "dk", s: "sn" },
-  salesValue: "230 Mn+",
-  steamValue: "100.000+",
-  greenValue: "≈13 Mn",
   cats: {
     news: "Haber", trailer: "Fragman", delay: "Erteleme", leak: "Sızıntı", rumor: "Kulis",
     meme: "Caps", cast: "Oyuncular", music: "Müzik", remake: "Yeniden yapım", ads: "Pazarlama"

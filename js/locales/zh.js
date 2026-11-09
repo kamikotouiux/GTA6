@@ -60,9 +60,6 @@
     s: { other: "秒" }
   },
   short: { d: "天", h: "时", m: "分", s: "秒" },
-  salesValue: "2.3亿+",
-  steamValue: "10万+",
-  greenValue: "约1300万",
   cats: {
     news: "新闻", trailer: "预告片", delay: "跳票", leak: "泄露", rumor: "爆料",
     meme: "梗", cast: "演员", music: "音乐", remake: "重制", ads: "营销"

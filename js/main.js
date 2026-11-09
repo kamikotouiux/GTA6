@@ -59,6 +59,7 @@
     return {
       plural: new Intl.PluralRules(intl),
       num: new Intl.NumberFormat(intl),
+      compact: new Intl.NumberFormat(intl, { notation: "compact", maximumFractionDigits: 1 }),
       date(o) {
         const key = JSON.stringify(o);
         if (!dates.has(key)) dates.set(key, new Intl.DateTimeFormat(intl, Object.assign({ timeZone: "UTC" }, o)));
@@ -248,7 +249,7 @@
       Object.keys(CATS).filter((k) => used.has(k)).map((k) => [k, L.cats[k], CATS[k]])
     );
     filtersEl.innerHTML = chips.map(([k, label, color]) =>
-      `<button type="button" class="chip" data-filter="${k}" style="--accent:${color}" aria-pressed="${k === filter}"><i></i>${esc(label)}</button>`
+      `<button type="button" class="chip" data-filter="${k}" style="--accent:${color}" aria-pressed="${k === filter}">${k === "all" ? "" : "<i></i>"}${esc(label)}</button>`
     ).join("");
   }
   filtersEl.addEventListener("click", (e) => {
@@ -279,16 +280,22 @@
     hours: document.querySelector('[data-live="hours"]'),
     age: document.querySelector('[data-live="age"]')
   };
+  const compactEls = [...document.querySelectorAll("[data-compact]")];
   function updateLive() {
     if (!fmt) return;
     const now = Math.min(Date.now(), RELEASE.getTime());
     const sec = (now - START.getTime()) / 1000;
     const years = sec / (365.2425 * 86400);
     const set = (el, v) => { const s = fmt.num.format(v); if (el && el.textContent !== s) el.textContent = s; };
-    set(live.births, Math.floor(years * WAIT.birthsPerYear));
-    set(live.km, Math.floor(sec * WAIT.earthKmPerSec));
-    set(live.hours, Math.floor(sec / 3600));
+    const v = { births: Math.floor(years * WAIT.birthsPerYear), km: Math.floor(sec * WAIT.earthKmPerSec), hours: Math.floor(sec / 3600) };
+    set(live.births, v.births);
+    set(live.km, v.km);
+    set(live.hours, v.hours);
     set(live.age, Math.floor(years));
+    // Крупные цифры — в короткой записи (1.8B, 115K), точные значения тикают строкой ниже.
+    const c = (n) => fmt.compact.format(n);
+    const big = { births: c(v.births), km: c(v.km), hours: c(v.hours), steam: c(100000) + "+", sales: c(230e6) + "+", green: "≈" + c(13e6) };
+    compactEls.forEach((el) => { const s = big[el.dataset.compact]; if (el.textContent !== s) el.textContent = s; });
   }
 
   /* ---------- Шеринг ---------- */
@@ -335,7 +342,6 @@
     document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
     document.querySelector(".hero__title").innerHTML = L.title.map((line) => `<span>${esc(line)}</span>`).join("");
-    document.querySelectorAll("[data-value]").forEach((el) => { el.textContent = L[el.dataset.value] || window.LOCALES.en[el.dataset.value]; });
     document.getElementById("lang-select").value = code;
     const half = L.marquee.map((w) => `<span>${esc(w)}</span><span class="sep">★</span>`).join("");
     document.querySelector(".marquee__track").innerHTML = half + half;

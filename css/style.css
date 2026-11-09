@@ -205,9 +205,13 @@ html[lang="ja"] .hero__lead, html[lang="zh"] .hero__lead { letter-spacing: 0; li
   max-width: 1240px; margin: clamp(36px, 5vw, 64px) auto 0; padding: 0 var(--gutter);
 }
 .tile { container-type: inline-size; display: flex; flex-direction: column; gap: 10px; padding: clamp(24px, 3vw, 40px); min-width: 0; }
-.tile--wide { grid-column: span 2; }
-.tile__num { font: 800 min(20cqi, 84px)/1.05 var(--font); letter-spacing: -0.045em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tile__num--long { font-size: min(11.5cqi, 128px); }
+/* Один кегль на все цифры: размер зависит только от ширины плитки, а плитки одинаковые. */
+.tile__num { font: 800 min(17cqi, 92px)/1 var(--font); letter-spacing: -0.045em; white-space: nowrap; margin-bottom: 6px; }
+.tile--row { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 4px 32px; }
+.tile--row .tile__num { font-size: min(calc(17cqi / 3), 92px); margin: 0; }
+.tile__live { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tile__live i { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); animation: pulse 1.6s infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
 .tile__label { font-weight: 600; font-size: 17px; line-height: 1.35; color: var(--text); max-width: 26em; }
 .tile__note { font-weight: 500; font-size: 14px; color: var(--muted); margin-top: auto; }
 
@@ -376,15 +380,28 @@ html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; li
 @media (max-width: 1180px) { .yearnav { display: none; } .topbar__nav { display: none; } .lang { margin-left: auto; } }
 @media (max-width: 900px) {
   .numbers__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tile--wide { grid-column: span 2; }
-  .tile--kids { grid-column: auto; }
+  .tile--row .tile__num { font-size: min(calc(17cqi / 2), 92px); }
 }
 @media (max-width: 860px) {
   .topbar { gap: 10px; }
-  .hero { padding-top: 120px; }
-  .hero__img { object-position: 62% 30%; }
-  .hero__sky::after { background: linear-gradient(180deg, rgba(20, 17, 38, .82) 0%, rgba(20, 17, 38, .74) 50%, rgba(20, 17, 38, .6) 78%, var(--bg) 100%); }
-  .hero__actions { align-items: flex-start; }
+  /* Херо на телефоне: сверху кадр с обоими героями, заголовок наезжает на его низ */
+  .hero { display: block; min-height: 0; padding: 0 0 44px; }
+  .hero__sky { position: relative; inset: auto; height: min(125vw, 82svh); }
+  .hero__img { object-position: 50% 20%; }
+  .hero__sky::after {
+    background:
+      linear-gradient(180deg, rgba(20, 17, 38, .55) 0%, rgba(20, 17, 38, 0) 16%),
+      linear-gradient(180deg, rgba(20, 17, 38, 0) 46%, rgba(20, 17, 38, .7) 72%, var(--bg) 96%);
+  }
+  .hero__content { position: relative; margin-top: calc(-1 * min(52vw, 34svh)); padding: 0 var(--gutter); }
+  .hero .eyebrow { font-size: 14px; margin-bottom: 10px; }
+  .hero__title { font-size: 14.4vw; line-height: .9; letter-spacing: -0.055em; }
+  html[lang="ja"] .hero__title, html[lang="zh"] .hero__title { font-size: 12.5vw; line-height: 1.05; }
+  .hero__lead { margin-top: 20px; font-size: 19px; line-height: 1.22; }
+  .hero__bottom { margin-top: 36px; gap: 22px; }
+  .hero__actions { align-items: stretch; width: 100%; gap: 16px; }
+  .hero__actions .btn { width: 100%; padding: 18px 24px; font-size: 17px; }
+  .countdown__num { font-size: 13vw; }
 
   .timeline__line { left: calc(var(--gutter) + 7px); }
   .card, .card--left, .card--right { width: auto; align-self: stretch; margin-left: 34px; }
@@ -397,8 +414,17 @@ html[lang="ja"] .meme__what, html[lang="zh"] .meme__what { letter-spacing: 0; li
   .footer { flex-direction: column; align-items: flex-start; }
 }
 @media (max-width: 560px) {
-  .numbers__grid { grid-template-columns: minmax(0, 1fr); }
-  .tile--wide { grid-column: auto; }
+  .numbers__grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .tile { padding: 22px 22px 24px; }
+  .tile--row { flex-direction: column; align-items: flex-start; }
+  .tile--row .tile__num { font-size: min(17cqi, 92px); margin-bottom: 6px; }
+  /* Факты «раньше GTA VI»: две колонки и один кегль */
+  .memes__grid { columns: 2; column-gap: 10px; }
+  .meme, .meme--big { margin-bottom: 10px; padding: 16px 16px 18px; border-radius: 24px; }
+  .meme time { font-size: 12px; }
+  .meme__what, .meme--big .meme__what { margin-top: 14px; font-size: 18px; line-height: 1.15; letter-spacing: -0.025em; }
+  .meme--big .meme__what { margin-top: 34px; }
+  .meme__note, .meme--big .meme__note { font-size: 13px; }
   .topbar__brand { display: none; }
   .topbar__timer { padding: 10px 13px; font-size: 13px; }
   .lang select { padding: 10px 32px 10px 14px; font-size: 13px; }
